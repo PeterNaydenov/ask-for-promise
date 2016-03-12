@@ -53,7 +53,7 @@ task.promise
 It's almost the same as previous example - right?
 
 ### Long Promise Chain
-Let's 
+Let's see how looks long chain of promises:
 ```
 
 // Keep definition of all promises together.
@@ -103,7 +103,7 @@ var files = [ 'info.txt', 'general.txt', 'about.txt']
 ```
 
 ### More
-For more examples, please visit test folder of the project.
+For more examples please visit test folder of the project.
 
 
 
