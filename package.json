@@ -1,0 +1,29 @@
+{
+  "name": "ask-for-promise",
+  "version": "1.0.0",
+  "description": "promise utility",
+  "main": "askForPromise.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PeterNaydenov/ask-for-promise.git"
+  },
+  "keywords": [
+    "promise",
+    "resolve",
+    "reject"
+  ],
+  "author": "Peter Naydenov <free@backformation.com> (http://backformation.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/PeterNaydenov/ask-for-promise/issues"
+  },
+  "homepage": "https://github.com/PeterNaydenov/ask-for-promise#readme"
+}
