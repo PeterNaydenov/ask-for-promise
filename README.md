@@ -10,14 +10,16 @@ Decouple **promises** from their 'resolve' and 'reject' functions and make posib
 
 Install by writing in your terminal:
 
-```shell
+```
 npm install ask-for-promise --save-dev
+
 ```
 
 Once it has been installed, it can be used by writing this line of JavaScript:
 
 ```js
-var askForPromise = require('askForPromise')
+var askForPromise = require('ask-for-promise')
+
 ```
 
 
