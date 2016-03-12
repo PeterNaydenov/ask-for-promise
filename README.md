@@ -27,7 +27,7 @@ var askForPromise = require('askForPromise')
 
 ### Simple promise
 
-```
+```js
 let task = askForPromise()
 
 asyncFunction ( someArgument, ( err, r ) => task.done ( 'task complete' )   )
@@ -40,7 +40,7 @@ task.promise
 AskForPromise will return an object. Property `task.promise` will contain promise it self. Resolve function is available as `task.done` and reject function as `task.cancel`. Completion of asyncFunction will complete the promise and will send in the console message 'task complete'.
 
 ### Let's do a Promise.race without using `Promise.race`.
-```
+```js
 let task = askForPromise()
 
 async_1 ( arg, ( err, r) => task.done('1') )
@@ -54,7 +54,7 @@ It's almost the same as previous example - right?
 
 ### Long Promise Chain
 Let's see how looks long chain of promises:
-```
+```js
 
 // Keep definition of all promises together.
 let prepareFolders  = askForPromise()
@@ -85,7 +85,7 @@ prepareFolders.promise
 
 
 ### Promise All
-```
+```js
 var files = [ 'info.txt', 'general.txt', 'about.txt']
 
  let writeTask = files.map ( fl => askForPromise()   )
@@ -136,5 +136,3 @@ _(Nothing yet)_
 
 ## License
 'ask-for-promise' is released under the [MIT License](http://opensource.org/licenses/MIT).
-
-
