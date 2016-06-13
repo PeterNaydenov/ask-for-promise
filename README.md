@@ -149,6 +149,13 @@ _(Nothing yet)_
 
 ## Release History
 
+### 1.1.1 (2016-06-13)
+
+ - [x] Array as argument;
+ - [x] Documentation update;
+ - [x] Test case;
+ - [ ] Browser version
+
 ### 1.0.0 (2016-03-12)
 
  - [x] Node.js module;
