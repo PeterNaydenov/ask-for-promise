@@ -88,21 +88,50 @@ prepareFolders.promise
 
 ### Promise All
 ```js
-var files = [ 'info.txt', 'general.txt', 'about.txt']
+ const files = [ 'info.txt', 'general.txt', 'about.txt']
 
- let writeTask = files.map ( fl => askForPromise()   )
- let writePromises = writeTask.map ( o => o.promise ) 
+ let writeComplete = files.map ( fl => askForPromise()   )
+ let writePromises = writeComplete.map ( o => o.promise ) 
 
- // myFS is a dummy library that works with files.
  files.forEach ( ( file , i ) => {
-       myFS.writeFiles ( file , () => writeTask[i].done() )
+       fs.writeFile ( file ,'dummy text', () => writeComplete[i].done() )
    })
 
- Promise.all ( writePromises )
- .then ( () => {   console.log ( 'DONE' )   })
+ Promise
+  .all ( writePromises )
+  .then ( () => {   
+                  console.log ( 'DONE' )   
+          })
 
 
 ```
+
+Simplify this example by providing array as argument of function askForPromise. Here is the rewrite of example:
+```js
+
+  const files = [ 'info.txt', 'general.txt', 'about.txt' ]
+
+  let writeComplete = askForPromise ( files )
+
+  files.forEach ( (file,i) => {
+          fs.writeFile ( file,'dummy text', () => writeTask[i].done() )
+       })
+
+  Promise
+   .all ( writeComplete.promises )
+   .then ( () => { 
+                    console.log ( 'DONE' )   
+           })
+
+
+```
+
+When function askForPromise get argument will return array of askForPromises object and property 'promises' will contain array of all promises.
+
+
+
+
+
 
 ### More
 For more examples please visit test folder of the project.

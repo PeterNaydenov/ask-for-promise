@@ -178,6 +178,28 @@ describe ( 'askForPromise - simplified promises', () => {
      }) // it chain
 
 
+  it ( 'array of promises' , (done) => {
+
+         let 
+                 list = [ 1 , 2, 3 ]
+               , a = 1
+               ;
+
+         let mission = askForPromise ( list )
+
+         list.forEach ( (el,i) => {
+                                     a = el
+                                     mission[i].done()
+              })
+         
+         Promise
+           .all ( mission.promises )
+           .then ( () => {
+                            expect ( a ).to.be.equal ( 3 )
+                            done ()
+                      })
+
+  }) // it array of promises
 
 }) // describe
 
