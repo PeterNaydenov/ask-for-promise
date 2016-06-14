@@ -114,7 +114,7 @@ Simplify this example by providing array as argument of function askForPromise. 
   let writeComplete = askForPromise ( files )
 
   files.forEach ( (file,i) => {
-          fs.writeFile ( file,'dummy text', () => writeTask[i].done() )
+          fs.writeFile ( file,'dummy text', () => writeComplete[i].done() )
        })
 
   Promise
@@ -148,6 +148,10 @@ _(Nothing yet)_
 
 
 ## Release History
+
+### 1.1.2 (2016-06-13)
+
+ - [x] Fix typo in documentation;
 
 ### 1.1.1 (2016-06-13)
 
