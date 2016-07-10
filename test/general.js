@@ -8,9 +8,9 @@ var
 
 
 
-describe ( 'askForPromise - simplified promises', () => {
+describe ( 'askForPromise - general', () => {
     
-    it ( 'done', ( done ) => {
+    it ( 'done (resolve)', ( done ) => {
               var test, msg ;
 
               let taskComplete = askForPromise()
@@ -35,7 +35,7 @@ describe ( 'askForPromise - simplified promises', () => {
 
 
 
-    it ( 'cancel' , ( done ) => {
+    it ( 'cancel (reject)' , ( done ) => {
             var test, msg;
 
             let taskComplete = askForPromise()
@@ -121,7 +121,7 @@ describe ( 'askForPromise - simplified promises', () => {
 
 
 
-  it ( 'alternative promise race', ( done ) => {
+  it ( 'Alternative promise race', ( done ) => {
           var
                   list = [ 2, 5, 1, 4 ]
                 , res  = []
@@ -147,7 +147,7 @@ describe ( 'askForPromise - simplified promises', () => {
 
 
 
-  it ( 'chain of promises' , ( done ) => {
+  it ( 'Chain of promises' , ( done ) => {
             var result = [];
 
             let step1 = askForPromise()
@@ -178,7 +178,7 @@ describe ( 'askForPromise - simplified promises', () => {
      }) // it chain
 
 
-  it ( 'array of promises' , (done) => {
+  it ( 'Array of promises' , (done) => {
 
          let 
                  list = [ 1 , 2, 3 ]

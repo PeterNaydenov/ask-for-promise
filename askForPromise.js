@@ -24,23 +24,41 @@ function askForPromise ( list ) {
                                                   done   = resolve
                                                   cancel = reject
                                  })
-   
+
    return { 
-               promise : x
-             , done    : done 
-             , cancel  : cancel
+               promise    : x
+             , done       : done 
+             , cancel     : cancel
+             , onComplete : _afterOne(x)
            }
- } // startPromise func.
+ } // askForPromise func.
+
+
+
+ function _afterOne ( x ) {
+                               return function (fx ) {
+                                                          x.then ( res => fx (res)   )
+                                         }
+    }
+
+
+ 
+ function _afterMany ( list ) {
+                              return function ( fx ) {
+                                       Promise.all( list ).then ( res => fx (res)   )
+                                        }
+    }
 
 
 
  function _manyPromises ( list ) {
-          let askObject = list.map ( el => askForPromise() )
-          let askList   = askObject.map ( o => o.promise )
-          
-          askObject [ 'promises' ] = askList
-          return askObject
- }
+                                    let askObject = list.map ( el => askForPromise() )
+                                    let askList   = askObject.map ( o => o.promise )
+                                    
+                                    askObject [ 'promises'   ] = askList
+                                    askObject [ 'onComplete' ] = _afterMany ( askList )
+                                    return askObject
+   } 
 
 
 
