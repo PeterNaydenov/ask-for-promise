@@ -187,7 +187,7 @@ _(Nothing yet)_
 
 ## Release History
 
-### 1.2.2 (2016-07-10)
+### 1.2.1 (2016-07-10)
 
 - [x] 'onComplete' function was added;
 - [x] Documentation update;
