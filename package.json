@@ -1,6 +1,6 @@
 {
   "name": "ask-for-promise",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "promise utility",
   "main": "askForPromise.js",
   "directories": {
