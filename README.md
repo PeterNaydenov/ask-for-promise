@@ -4,6 +4,47 @@ Decouple **promises** from their 'resolve' and 'reject' functions and make posib
 
 'Ask-for-promise' is enhancer for standard promise library by providing syntax for writing shorter and more readable promises.
 
+```js
+
+// standard promise pattern
+let standardTask = new Promire ( (resolve,reject) => {
+       // ... wrap everything related to the promise inside this function
+       // when promise resolve - call resolve (result)
+       // or call reject ( result )
+    })
+
+// after promise:
+standardTask.then ( item => {
+  // where 'item' is a 'result' argument sent from 'resolve' or 'reject' function. 
+})
+
+
+
+// askForPromise pattern
+let askTask = askForPromise()
+/* 
+  askTask is an object that contains
+  {
+     promise    - Promise itself
+     done       - function : Resolve function
+     cancel     - function : Reject function
+     onComplete - function : Sugar synax for askTask.promise.then
+  }
+
+  You can complete the promise anywhere in your code by writing:
+  askTask.done(result)
+
+  Or reject promise by:
+  askTask.cancel(result)
+*/
+
+// after promise:
+askTask.onComplete ( item => { 
+// where 'item' is a 'result' argument sent from 'done' or 'cancel' function. 
+})
+
+```
+
 
 
 
@@ -12,7 +53,7 @@ Decouple **promises** from their 'resolve' and 'reject' functions and make posib
 Install by writing in your terminal:
 
 ```
-npm install ask-for-promise --save-dev
+npm install ask-for-promise --save
 
 ```
 
@@ -35,15 +76,13 @@ let task = askForPromise()
 
 asyncFunction ( someArgument, ( err, r ) => task.done ( 'task complete' )   )
 
-task.promise.then ( ( r ) => { console.log ( r ) })
+task.onComplete ( r => console.log(r)   )
 
-// library provide sugar syntax for 'task.promise.then'.
-// Use this instead:
-// task.onComplete ( (r) => { console.log (r)   })
-
+// Method 'onComplete' is sugar syntax for 'task.promise.then'.
+// task.promise.then ( r => { console.log ( r ) })
 ```
 
-AskForPromise will return an object. Property `task.promise` will contain promise it self. Resolve function is available as `task.done` and reject function as `task.cancel`. Completion of asyncFunction will complete the promise and will send in the console message 'task complete'.
+AskForPromise will return an object. Property `task.promise` will contain promise it self. Resolve function is available as `task.done` and reject function as `task.cancel`. Completion of asyncFunction will complete the promise with 'task complete' argument and will print a console message 'task complete'.
 
 ### Let's do a Promise.race without using `Promise.race`.
 ```js
@@ -52,11 +91,9 @@ let task = askForPromise()
 async_1 ( arg, ( err, r) => task.done('1') )
 async_2 ( arg, ( err, r) => task.done('2') )
 
-task.promise.than ( ( r ) => console.log ( r )   )
-
-// And short version:
-// task.onComplete ( (r) => console.log(r)   )
-
+task.onComplete ( r => console.log(r)   )
+// It's equal of:
+// task.promise.than ( r => console.log ( r )   )
 ```
 It's almost the same as previous example - right?
 
@@ -72,9 +109,9 @@ let updateInterface = askForPromise()
 // myFS is a dummy library that works with files.
 myFS.makeFolders ( folders, ( err , r ) => prepareFolders.done() )
 
-prepareFolders.promise
-.then ( () => {
-                  myFS.writeFiles ( files , ()=> writeFiles.done() )
+prepareFolders
+ .onComplete ( () => {
+                  myFS.writeFiles ( files , () => writeFiles.done() )
                   return writeFiles.promise
               })
 .then ( () => {
@@ -186,6 +223,14 @@ _(Nothing yet)_
 
 
 ## Release History
+
+### 1.2.2 (2017-02-04)
+
+- [x] Documentation update;
+
+
+
+
 
 ### 1.2.1 (2016-07-10)
 

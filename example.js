@@ -28,7 +28,7 @@ var askForPromise = require ('./askForPromise');
                    just_go.done ( 'Step forward' )
                    return just_go.promise
               })
- .then ( ( data ) => {
+ .then ( data  => {
                    console.log ( data + ' and FINAL' )
             })
 
