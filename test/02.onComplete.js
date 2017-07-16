@@ -88,8 +88,6 @@ describe ( 'askForPromise - "onComplete" function', () => {
                                             done()
                     })
     }) // it alt race
-
- 
   
 }) // describe
 

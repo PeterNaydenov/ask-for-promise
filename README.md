@@ -1,8 +1,8 @@
 # Ask for Promise
 
-Decouple **promises** from their 'resolve' and 'reject' functions and make posible to use them with any javascript function ( sync or not sync). 'Ask-for-promise' also provide sugar syntax for some long statements.
+Decouple **promises** from their 'resolve' and 'reject' functions and make posible to use them with any javascript function ( sync or async). 'Ask-for-promise' also provide sugar syntax for some long statements.
 
-'Ask-for-promise' is enhancer for standard promise library by providing syntax for writing shorter and more readable promises.
+'Ask-for-promise' provides also an option to set a ttl ( time to live) for the promise. If time is up promise will close with timeout message.
 
 ```js
 
@@ -128,28 +128,27 @@ prepareFolders
 
 
 
+### Promise with Timeout
 
-### Promise All
 ```js
- const files = [ 'info.txt', 'general.txt', 'about.txt']
+let final;
+const task = askForPromise().timeout ( 2000, 'expire' );
+// setTimeout: .timeout ( ttl, 'expireMessage'). ttl is time to live in milliseconds
 
- let writeFile     = files.map ( fl => askForPromise()   )
- let writePromises = writeFile.map ( o => o.promise ) 
-
- files.forEach ( ( file , i ) => {
-       fs.writeFile ( file ,'dummy text', () => writeFile[i].done() )
-   })
-
- Promise
-  .all ( writePromises )
-  .then ( () => {   
-                  console.log ( 'DONE' )   
-          })
-
+task.onComplete ( result => {
+    if ( result === 'expire' ) final = 'timeout'                    // ... it's after timeout
+    else                       final = 'success resolved promise'
+})
 
 ```
 
-Simplify this example by providing array as argument of function askForPromise. Here is the rewrite of example:
+
+
+
+
+### Promise All
+
+Promise all by providing array of data. Here is the example:
 ```js
 
   const files = [ 'info.txt', 'general.txt', 'about.txt' ]
@@ -223,6 +222,15 @@ _(Nothing yet)_
 
 
 ## Release History
+
+### 1.3.0 (2017-07-16)
+
+- [x] Promise with timeout;
+- [x] Tests for promise with timeout;
+- [x] Code Refactoring;
+- [x] Documentation update;
+
+
 
 ### 1.2.2 (2017-02-04)
 

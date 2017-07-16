@@ -20,7 +20,9 @@
   "keywords": [
     "promise",
     "resolve",
-    "reject"
+    "reject" ,
+    "timout" ,
+    "ttl"
   ],
   "author": "Peter Naydenov <free@backformation.com> (http://backformation.com)",
   "license": "MIT",
