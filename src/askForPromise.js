@@ -10,9 +10,6 @@ module.exports = askForPromise
 
 
 
-const promiseFinite = require ('promise-finite').default;
-
-
 
 function askForPromise ( list ) {
    let  

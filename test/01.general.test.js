@@ -1,7 +1,7 @@
 'use strict'
 
 var 
-      askForPromise = require ('../askForPromise')
+      askForPromise = require ('../src/askForPromise')
     , chai = require ( 'chai' )
     , expect = chai.expect
     ;
@@ -10,7 +10,7 @@ var
 
 describe ( 'askForPromise - general', () => {
     
-    it ( 'done (resolve)', ( done ) => {
+    it ( 'done (resolve)', () => {
               var test, msg ;
 
               let taskComplete = askForPromise()
@@ -27,7 +27,6 @@ describe ( 'askForPromise - general', () => {
               setTimeout ( () => {
                                          expect ( test ).to.be.equal ( 1 )
                                          expect ( msg  ).to.be.equal ( 'success' )
-                                         done()
                          }, 3 )
        }) // it done
 
@@ -35,7 +34,7 @@ describe ( 'askForPromise - general', () => {
 
 
 
-    it ( 'cancel (reject)' , ( done ) => {
+    it ( 'cancel (reject)' , () => {
             var test, msg;
 
             let taskComplete = askForPromise()
@@ -54,7 +53,6 @@ describe ( 'askForPromise - general', () => {
             setTimeout ( () => { 
                                   expect ( test ).to.be.equal ( 3 )
                                   expect ( msg ).to.be.equal ( 'bad' )
-                                  done()
                        }, 3 )
        }) // it cancel
 
@@ -62,7 +60,7 @@ describe ( 'askForPromise - general', () => {
 
 
     
-    it ( 'promise.all' , ( done ) => {
+    it ( 'promise.all' , () => {
             var
                   list = [ 2, 5, 1, 4 ]
                 , res  = []
@@ -85,8 +83,6 @@ describe ( 'askForPromise - general', () => {
                               
                               expect ( r[0]).to.equal (list[0] )
                               expect ( res[0]).to.not.equal (list[0] )
-
-                              done()
                   })
        }) // it promise all
 
@@ -94,7 +90,7 @@ describe ( 'askForPromise - general', () => {
 
 
 
-  it ( 'promise.race', ( done ) => {
+  it ( 'promise.race', () => {
           var
                   list = [ 2, 5, 1, 4 ]
                 , res  = []
@@ -113,7 +109,6 @@ describe ( 'askForPromise - general', () => {
             .then ( ( r ) => {
                               expect ( res ).to.have.length ( 1 )
                               expect ( r   ).to.be.equal ( res[0] )
-                              done()
                   })
     }) // it race
 
@@ -121,7 +116,7 @@ describe ( 'askForPromise - general', () => {
 
 
 
-  it ( 'Alternative promise race', ( done ) => {
+  it ( 'Alternative promise race', () => {
           var
                   list = [ 2, 5, 1, 4 ]
                 , res  = []
@@ -136,10 +131,9 @@ describe ( 'askForPromise - general', () => {
                     )
 
             taskComplete.promise
-            .then ( ( r ) => {
+            .then ( r => {
                               expect ( res ).to.have.length ( 1 )
-                              expect ( r   ).to.be.equal ( res[0] )
-                              done()
+                              expect ( r   ).to.be.equal ( res[0] )                              
                   })
     }) // it alt race
 
@@ -147,7 +141,7 @@ describe ( 'askForPromise - general', () => {
 
 
 
-  it ( 'Chain of promises' , ( done ) => {
+  it ( 'Chain of promises' , () => {
             var result = [];
 
             let step1 = askForPromise()
@@ -170,16 +164,14 @@ describe ( 'askForPromise - general', () => {
             .then ( () => {
                              result.push ( 'step 3' )
                              expect ( result    ).to.have.length ( 4 )
-                             expect ( result[0] ).to.equal ( 'start' )
-                             done()
+                             expect ( result[0] ).to.equal ( 'start' )                            
                   })
 
             result.push ( 'start' )
      }) // it chain
 
 
-  it ( 'Array of promises' , (done) => {
-
+  it ( 'Array of promises' , () => {
          let 
                  list = [ 1 , 2, 3 ]
                , a = 1
@@ -195,8 +187,7 @@ describe ( 'askForPromise - general', () => {
          Promise
            .all ( mission.promises )
            .then ( () => {
-                            expect ( a ).to.be.equal ( 3 )
-                            done ()
+                            expect ( a ).to.be.equal ( 3 )                            
                       })
 
   }) // it array of promises

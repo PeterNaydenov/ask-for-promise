@@ -1,7 +1,7 @@
 'use strict'
 
 var 
-      askForPromise = require ('../askForPromise')
+      askForPromise = require ('../src/askForPromise')
     , chai = require ( 'chai' )
     , expect = chai.expect
     ;
@@ -10,7 +10,7 @@ var
 
 describe ( 'askForPromise - "onComplete" function', () => {
     
-    it ( 'onComplete: One promise', ( done ) => {
+    it ( 'onComplete: One promise', () => {
               var test, msg ;
 
               let task = askForPromise ()
@@ -28,8 +28,7 @@ describe ( 'askForPromise - "onComplete" function', () => {
 
               setTimeout ( () => {
                                          expect ( test ).to.be.equal ( 1 )
-                                         expect ( msg  ).to.be.equal ( 'success' )
-                                         done()
+                                         expect ( msg  ).to.be.equal ( 'success' )                                         
                          }, 3 )
        }) // it done
     
@@ -37,7 +36,7 @@ describe ( 'askForPromise - "onComplete" function', () => {
 
 
 
-    it ( 'onComplete: List of promises', ( done ) => {
+    it ( 'onComplete: List of promises', () => {
                  var
                   list = [ 2, 5, 1, 4 ]
                 , res  = []
@@ -53,14 +52,12 @@ describe ( 'askForPromise - "onComplete" function', () => {
                  })
 
             task
-             .onComplete ( ( r ) => {
+             .onComplete ( r => {
                                         expect ( res ).to.have.length ( 4 )
                                         expect ( r   ).to.have.length ( 4 )
                                         
                                         expect ( r[0]).to.equal (list[0] )
                                         expect ( res[0]).to.not.equal (list[0] )
-
-                                        done ()
                  })
        }) // it done
 
@@ -68,7 +65,7 @@ describe ( 'askForPromise - "onComplete" function', () => {
   
 
 
-    it ( 'onComplete: Alternative promise race', ( done ) => {
+    it ( 'onComplete: Alternative promise race', () => {
           var
                   list = [ 2, 5, 1, 4 ]
                 , res  = []
@@ -82,10 +79,9 @@ describe ( 'askForPromise - "onComplete" function', () => {
                                               } , el )   
                     )
 
-            task.onComplete ( ( r ) => {
-                                            expect ( res ).to.have.length ( 1 )
-                                            expect ( r   ).to.be.equal ( res[0] )
-                                            done()
+            task.onComplete ( r => {
+                                        expect ( res ).to.have.length ( 1 )
+                                        expect ( r   ).to.be.equal ( 1 )
                     })
     }) // it alt race
   
