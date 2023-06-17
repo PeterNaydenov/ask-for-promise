@@ -1,7 +1,7 @@
 # Ask for Promise
 
-![version](https://img.shields.io/github/package-json/v/peterNaydenov/log)
-![license](https://img.shields.io/github/license/peterNaydenov/log)
+![version](https://img.shields.io/github/package-json/v/peterNaydenov/ask-for-promise)
+![license](https://img.shields.io/github/license/peterNaydenov/ask-for-promise)
 
 
 
