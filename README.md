@@ -1,5 +1,10 @@
 # Ask for Promise
 
+![version](https://img.shields.io/github/package-json/v/peterNaydenov/log)
+![license](https://img.shields.io/github/license/peterNaydenov/log)
+
+
+
 Decouple **promises** from their 'resolve' and 'reject' functions and make posible to use them with any javascript function ( sync or async). 'Ask-for-promise' also provide sugar syntax for some long statements.
 
 'Ask-for-promise' provides also an option to set a **ttl ( time to live) for the promise**. If time is up promise will close with timeout message.
