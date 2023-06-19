@@ -3,6 +3,14 @@
   "version": "1.3.1",
   "description": "promise utility",
   "main": "src/askForPromise.js",
+  "module": "./src/askForPromise.js",
+  "exports": {
+    ".": {
+      "require": "./src/askForPromise.js",
+      "import": "./src/askForPromise.js",
+      "default": "./src/askForPromise.js"
+    }
+  },
   "directories": {
     "test": "test"
   },
@@ -27,6 +35,7 @@
   },
   "homepage": "https://github.com/PeterNaydenov/ask-for-promise#readme",
   "devDependencies": {
+    "@skypack/package-check": "^0.2.2",
     "chai": "4.3.7",
     "mocha": "10.2.0",
     "nyc": "15.1.0"
@@ -44,5 +53,10 @@
       "text-summary"
     ]
   },
-  "license": "MIT"
+  "license": "MIT",
+  "files": [
+    "src/*.js",
+    "LICENSE"
+  ],
+  "types": "./src/askForPromise.d.ts"
 }
