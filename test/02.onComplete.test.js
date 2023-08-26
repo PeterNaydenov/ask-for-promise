@@ -62,7 +62,18 @@ describe ( 'askForPromise - "onComplete" function', () => {
        }) // it done
 
 
-  
+
+    it ( 'onComplete: Empty list of promises', done => {
+            const list = [];
+            let task = askForPromise (list);
+            list.forEach ( ( el, i ) =>  task[i].done(el)   )
+            task
+                .onComplete ( r => {
+                                      expect ( r ).to.have.length ( 0 )
+                                      done ()
+                          })
+      }) // it empty list
+
 
 
     it ( 'onComplete: Alternative promise race', () => {

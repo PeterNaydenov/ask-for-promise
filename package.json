@@ -36,7 +36,7 @@
   "homepage": "https://github.com/PeterNaydenov/ask-for-promise#readme",
   "devDependencies": {
     "@skypack/package-check": "^0.2.2",
-    "chai": "4.3.7",
+    "chai": "4.3.8",
     "mocha": "10.2.0",
     "nyc": "15.1.0"
   },
