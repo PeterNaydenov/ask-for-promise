@@ -2,6 +2,11 @@
 
 
 
+### 1.4.0 ( 2023-10-15 )
+- [x] AskForPromise.all - execute a list of promise functions in parallel;
+- [x] AskForPromise.sequence - execute a list of promise functions in sequence;
+
+
 
 ### 1.3.0 (2017-07-16)
 

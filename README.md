@@ -2,6 +2,11 @@
 
 ![version](https://img.shields.io/github/package-json/v/peterNaydenov/ask-for-promise)
 ![license](https://img.shields.io/github/license/peterNaydenov/ask-for-promise)
+![npm](https://img.shields.io/npm/dt/ask-for-promise)
+![GitHub issues](https://img.shields.io/github/issues/peterNaydenov/ask-for-promise)
+![GitHub top language](https://img.shields.io/github/languages/top/peterNaydenov/ask-for-promise)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/peterNaydenov/ask-for-promise)
+![npm bundle size](https://img.shields.io/bundlephobia/min/ask-for-promise)
 
 
 
@@ -35,6 +40,7 @@ let askTask = askForPromise()
      done       - function : Resolve function
      cancel     - function : Reject function
      onComplete - function : Sugar synax for askTask.promise.then
+     timeout    - function : Set time to live for the promise
   }
 
   You can complete the promise anywhere in your code by writing:
@@ -49,6 +55,23 @@ askTask.onComplete ( item => {
 // where 'item' is a 'result' argument sent from 'done' or 'cancel' function. 
 })
 
+
+// Execute a list of promise functions in sequence
+let task = askForPromise.sequence ( [ function1, function2, function3 ] )
+// where function1, function2, function3 are functions that return a promise
+// function1 will be executed first, then function2 and function3
+task.onComplete ( result => {
+            // result is an array of results from all promises
+   })
+
+
+// Execute a list of promise functions in parallel
+let task = askForPromise.all ( [ function1, function2, function3 ] )
+// where function1, function2, function3 are functions that return a promise
+// function1, function2 and function3 will be executed in parallel
+task.onComplete ( result => {
+            // result is an array of results from all promises in same order as they are in the array
+   })
 ```
 
 
@@ -59,15 +82,14 @@ askTask.onComplete ( item => {
 Install by writing in your terminal:
 
 ```
-npm install ask-for-promise --save
+npm install ask-for-promise
 
 ```
 
 Once it has been installed, it can be used by writing this line of JavaScript:
 
 ```js
-var askForPromise = require('ask-for-promise')
-
+import askForPromise from 'ask-for-promise'
 ```
 
 
@@ -214,15 +236,7 @@ With 'ask-for-promise' asking for one or many promises have almost same syntax. 
 
 
 ### More
-For more examples please visit test folder of the project.
-
-
-
-
-
-## Known bugs
-_(Nothing yet)_
-
+For more examples please visit "**test**" folder of the project.
 
 
 
