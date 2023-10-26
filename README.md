@@ -1,3 +1,8 @@
+<img src="Ask-for-promise.png" width="100%" alt="Ask for Promise" title="Ask for Promise" align="center" />
+
+<hr />
+
+
 # Ask for Promise
 
 ![version](https://img.shields.io/github/package-json/v/peterNaydenov/ask-for-promise)
@@ -7,7 +12,6 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/peterNaydenov/ask-for-promise)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/peterNaydenov/ask-for-promise)
 ![npm bundle size](https://img.shields.io/bundlephobia/min/ask-for-promise)
-
 
 
 
