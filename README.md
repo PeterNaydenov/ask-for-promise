@@ -1,6 +1,6 @@
 <img src="Ask-for-promise.png" width="100%" alt="Ask for Promise" title="Ask for Promise" align="center" />
 
-<hr />
+ ----
 
 
 # Ask for Promise
