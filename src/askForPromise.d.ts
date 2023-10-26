@@ -1,1 +1,0 @@
-export type list = Array<string>;
