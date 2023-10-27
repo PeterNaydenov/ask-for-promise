@@ -1,6 +1,10 @@
 ## Release History
 
 
+### 1.5.0 ( 2023-10-27)
+- [x] JsDoc types;
+
+
 
 ### 1.4.0 ( 2023-10-15 )
 - [x] AskForPromise.all - execute a list of promise functions in parallel;
