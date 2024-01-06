@@ -1,12 +1,7 @@
 'use strict'
 
-var 
-      askForPromise = require ('../src/askForPromise')
-    , chai = require ( 'chai' )
-    , expect = chai.expect
-    ;
-
-
+import askForPromise from '../src/askForPromise.js'
+import { expect } from 'chai';
 
 
 

@@ -1,6 +1,12 @@
 ## Release History
 
 
+
+### 2.0.0 ( 2024-01-06)
+- [x] Ask-for-promise becomes a ES6 module;
+
+
+
 ### 1.5.0 ( 2023-10-27)
 - [x] JsDoc types;
 

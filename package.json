@@ -4,6 +4,7 @@
   "version": "1.5.0",
   "license": "MIT",
   "author": "Peter Naydenov",
+  "type": "module",
   "homepage": "https://github.com/PeterNaydenov/ask-for-promise#readme",
   "bugs": {
     "url": "https://github.com/PeterNaydenov/ask-for-promise/issues"
@@ -13,8 +14,8 @@
     "cover": "c8 mocha test"
   },
   "devDependencies": {
-    "c8": "^8.0.1",
-    "chai": "4.3.10",
+    "c8": "^9.0.0",
+    "chai": "5.0.0",
     "mocha": "10.2.0"
   },
   "repository": {

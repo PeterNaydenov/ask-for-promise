@@ -7,9 +7,10 @@
    - Promise with timeout added July 16th, 2017 (v.1.3.0);
    - askForPromise.all & AskForPromise.sequence added October 15th, 2023(v.1.4.0);
    - jsDocs type definitions added October 27th, 2023(v.1.5.0);
+   - Converted to ES6 module January 6th, 2024(v.2.0.0);
 */
 
-module.exports = askForPromise
+export default askForPromise
 
 
 
