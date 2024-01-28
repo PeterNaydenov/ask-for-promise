@@ -1,16 +1,16 @@
 {
   "name": "ask-for-promise",
   "description": "promise utility library",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "license": "MIT",
   "author": "Peter Naydenov",
   "main": "./dist/askForPromise.umd.js",
   "type": "module",
   "exports": {
     ".": {
-            "import": "./dist/askForPromise.esm.mjs",
-            "require": "./dist/askForPromise.cjs",
-            "default": "./dist/askForPromise.umd.js"
+      "import": "./dist/askForPromise.esm.mjs",
+      "require": "./dist/askForPromise.cjs",
+      "default": "./dist/askForPromise.umd.js"
     },
     "./package.json": "./package.json",
     "./README.md": "./README.md",
@@ -40,7 +40,6 @@
     "@rollup/plugin-terser": "^0.4.4",
     "rollup": "^4.9.6"
   },
-
   "directories": {
     "test": "test"
   },
