@@ -2,6 +2,11 @@
 
 
 
+### 2.0.1 ( 2024-01-28)
+- [x] Package.json: "exports" section was added. Allows you to use package as commonjs or es6 module without additional configuration;
+
+
+
 ### 2.0.0 ( 2024-01-06)
 - [x] Ask-for-promise becomes a ES6 module;
 
