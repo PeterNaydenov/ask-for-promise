@@ -2,8 +2,14 @@
 
 
 
+### 2.0.2 ( 2024-01-31)
+- [x] Fix: Folder 'dist' missing in npm package;
+
+
+
 ### 2.0.1 ( 2024-01-28)
 - [x] Package.json: "exports" section was added. Allows you to use package as commonjs or es6 module without additional configuration;
+- [ ] Bug: Folder 'dist' missing in npm package;
 
 
 

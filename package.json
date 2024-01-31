@@ -4,20 +4,25 @@
   "version": "2.0.1",
   "license": "MIT",
   "author": "Peter Naydenov",
-  "main": "./dist/askForPromise.umd.js",
+  "main": "./dist/ask-for-promise.umd.js",
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/askForPromise.esm.mjs",
-      "require": "./dist/askForPromise.cjs",
-      "default": "./dist/askForPromise.umd.js"
-    },
-    "./package.json": "./package.json",
-    "./README.md": "./README.md",
-    "./LICENSE": "./LICENSE",
-    "./src/*": "./src/*",
-    "./dist/*": "./dist/*"
+              "import": "./dist/ask-for-promise.esm.mjs",
+              "require": "./dist/ask-for-promise.cjs",
+              "default": "./dist/ask-for-promise.umd.js"
+          },
+            "./package.json": "./package.json",
+            "./src/*": "./src/*",
+            "./dist/*": "./dist/*"
   },
+  "files": [
+    "src/*.js",
+    "dist/*.js",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
   "scripts": {
     "test": "mocha test",
     "cover": "c8 mocha test",
@@ -56,10 +61,6 @@
       "text-summary"
     ]
   },
-  "files": [
-    "src/*.js",
-    "LICENSE"
-  ],
   "keywords": [
     "promise",
     "sequence",

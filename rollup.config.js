@@ -9,7 +9,7 @@ export default [
 		input: 'src/askForPromise.js',
 		output: {
 			name: 'askForPromise',
-			file: 'dist/askForPromise.umd.js',
+			file: 'dist/ask-for-promise.umd.js',
 			format: 'umd'
 		},
 		plugins: [
@@ -28,8 +28,8 @@ export default [
 	{
 		input: 'src/askForPromise.js',
 		output: [
-			{ file: 'dist/askForPromise.cjs'    , format: 'cjs' },
-			{ file: 'dist/askForPromise.esm.mjs', format: 'es' }
+			{ file: 'dist/ask-for-promise.cjs'    , format: 'cjs' },
+			{ file: 'dist/ask-for-promise.esm.mjs', format: 'es' }
 		],
 		plugins: [ terser() ]
 	}
