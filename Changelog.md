@@ -2,7 +2,7 @@
 
 
 
-### 2.0.2 ( 2024-01-31)
+### 2.0.3 ( 2024-01-31)
 - [x] Fix: Folder 'dist' missing in npm package;
 
 

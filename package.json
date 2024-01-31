@@ -18,7 +18,7 @@
   },
   "files": [
     "src/*.js",
-    "dist/*.js",
+    "dist/*",
     "LICENSE",
     "README.md",
     "package.json"
