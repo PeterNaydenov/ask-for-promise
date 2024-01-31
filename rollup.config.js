@@ -1,6 +1,6 @@
 import resolve    from '@rollup/plugin-node-resolve'
 import commonjs   from '@rollup/plugin-commonjs'
-import terser from '@rollup/plugin-terser';
+import terser     from '@rollup/plugin-terser';
 
 
 export default [
@@ -27,7 +27,6 @@ export default [
 	// `file` and `format` for each target)
 	{
 		input: 'src/askForPromise.js',
-		external: ['ms'],
 		output: [
 			{ file: 'dist/askForPromise.cjs'    , format: 'cjs' },
 			{ file: 'dist/askForPromise.esm.mjs', format: 'es' }
