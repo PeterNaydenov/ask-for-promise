@@ -93,7 +93,11 @@ npm install ask-for-promise
 Once it has been installed, it can be used by writing this line of JavaScript:
 
 ```js
+// if you are using ES6:
 import askForPromise from 'ask-for-promise'
+
+// if you are using commonJS:
+const askForPromise = require ( 'ask-for-promise' )
 ```
 
 
