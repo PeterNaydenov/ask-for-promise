@@ -68,7 +68,7 @@ function askForPromise ( list ) {
   function* listGen ( n ) {   for ( const el of n ) { yield el }} 
   const g = listGen ( list );
 
-  function wait ( n, ...args ) {
+  function wait ( n, ...args ) {   // Recursive function for calling function list in sequence
       if ( n.done ) {
                task.done ( result )
                return
@@ -79,7 +79,7 @@ function askForPromise ( list ) {
           }) 
       } // wait func.
 
-  wait ( g.next(), ...args )
+  wait ( g.next(), ...args ) // Starting with iteration of list
   return task
 } // promiseInSequence func.
 
