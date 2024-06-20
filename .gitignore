@@ -23,8 +23,8 @@ vendor/
 *.dylib
 
 # Ignore package lock files
-package-lock.json
-yarn.lock
+# package-lock.json
+# yarn.lock
 
 # Ignore environment-specific files
 .env
