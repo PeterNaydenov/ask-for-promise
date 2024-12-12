@@ -4,17 +4,19 @@
   "version": "2.0.3",
   "license": "MIT",
   "author": "Peter Naydenov",
-  "main": "./dist/ask-for-promise.umd.js",
+  "main": "src/askForPromise.js",
   "type": "module",
+  "types": "types/askForPromise.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/ask-for-promise.esm.mjs",
+      "import": "./src/askForPromise.js",
       "require": "./dist/ask-for-promise.cjs",
-      "default": "./dist/ask-for-promise.umd.js"
+      "default": "./src/askForPromise.js"
     },
     "./package.json": "./package.json",
     "./src/*": "./src/*",
-    "./dist/*": "./dist/*"
+    "./dist/*": "./dist/*",
+    "./types/*": "./types/*"
   },
   "files": [
     "src/*.js",
@@ -26,7 +28,8 @@
   "scripts": {
     "test": "mocha test",
     "cover": "c8 mocha test",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "postbuild": "tsc -p tsconfig.json"
   },
   "repository": {
     "type": "git",
@@ -37,13 +40,14 @@
     "url": "https://github.com/PeterNaydenov/ask-for-promise/issues"
   },
   "devDependencies": {
-    "c8": "^10.1.3",
-    "chai": "5.1.2",
-    "mocha": "11.0.1",
     "@rollup/plugin-commonjs": "^28.0.1",
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-terser": "^0.4.4",
-    "rollup": "^4.28.1"
+    "c8": "^10.1.3",
+    "chai": "5.1.2",
+    "mocha": "11.0.1",
+    "rollup": "^4.28.1",
+    "typescript": "^5.7.2"
   },
   "directories": {
     "test": "test"
