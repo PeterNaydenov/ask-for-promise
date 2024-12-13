@@ -1,8 +1,7 @@
 export default askForPromise;
-export type askObject = {};
+export type AskObject = any;
 /**
- * @typedef askObject
- * @type {Object}
+ * @typedef {Object} AskObject
  * @description Object with promise and related helper functions
  * @property {Promise} [promise] - Promise object if a single promise is created
  * @property {Array<Promise>} [promises] - Array of promises if multiple promises are created
@@ -10,14 +9,14 @@ export type askObject = {};
  * @property {Function} cancel - Reject function
  * @property {Function} onComplete - Function to be called after promise is resolved
  * @property {Function} timeout - Function to set timeout on promise
- *
  */
 /**
+ * Creates object with promise and related helper functions
  * @function askForPromise
  * @param {Array<any>} [list] - List of items that need to have a corresponding promise.(optional)
- * @returns {askObject} - Object with promise and related helper functions
+ * @returns {AskObject} Object with promise and related helper functions
  */
-declare function askForPromise(list?: Array<any>): askObject;
+declare function askForPromise(list?: Array<any>): AskObject;
 declare namespace askForPromise {
     /**
      * @function sequence

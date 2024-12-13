@@ -21,6 +21,7 @@
   "files": [
     "src/*.js",
     "dist/*",
+    "types/*",
     "LICENSE",
     "README.md",
     "package.json"

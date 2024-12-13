@@ -15,8 +15,7 @@ export default askForPromise
 
 
 /**
- * @typedef askObject
- * @type {Object}
+ * @typedef {Object} AskObject
  * @description Object with promise and related helper functions
  * @property {Promise} [promise] - Promise object if a single promise is created
  * @property {Array<Promise>} [promises] - Array of promises if multiple promises are created
@@ -24,29 +23,34 @@ export default askForPromise
  * @property {Function} cancel - Reject function
  * @property {Function} onComplete - Function to be called after promise is resolved
  * @property {Function} timeout - Function to set timeout on promise
- * 
  */
+
 
 
 /**
+ * Creates object with promise and related helper functions
  * @function askForPromise
  * @param {Array<any>} [list] - List of items that need to have a corresponding promise.(optional)
- * @returns {askObject} - Object with promise and related helper functions
+ * @returns {AskObject} Object with promise and related helper functions
  */
 function askForPromise ( list ) {
-   let  
-         isList = false
-       , askObject
-       ;
+   let  isList = false , r;
    
    if ( list ) {
-                askObject = _manyPromises ( list )
+                r = _manyPromises ( list )
                 isList = true
         } 
-   else         askObject = _singlePromise ();
-
-   askObject.timeout = _timeout ( isList, askObject )   
-   return askObject
+   else         r = _singlePromise ();
+   r.timeout = _timeout ( isList, r ) 
+   /** @type {AskObject} */  
+   return {
+                promise: r.promise ? r.promise : null,
+                promises: r.promises ? r.promises : null,
+                done: r.done,
+                cancel: r.cancel,
+                onComplete: r.onComplete,
+                timeout: r.timeout
+          }
  } // askForPromise func.
 
 
@@ -119,6 +123,7 @@ function _singlePromise () {
 
    return { 
                promise    : x
+             , promises   : null
              , done       : done 
              , cancel     : cancel
              , onComplete : _after(x)
