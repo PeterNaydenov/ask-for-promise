@@ -30,7 +30,7 @@ describe ( 'askForPromise - "Timeout" function', () => {
     it ( 'Timeout: Multiple promises with completion', () => {
             const list = [ 2, 50, 10, 40 ];
             const task = askForPromise ( list ).timeout ( 100, "finish" )
-            list.forEach ( ( el, i ) => { setTimeout ( () => task[i].done ( el ), el )   })
+            list.forEach ( ( el, i ) => { setTimeout ( () => task.promises[i].done ( el ), el )   })
             task
              .onComplete (  r  => {
                                         expect ( r ).to.be.an ( 'array' )
@@ -43,7 +43,7 @@ describe ( 'askForPromise - "Timeout" function', () => {
     it ( 'Timeout: Multipe promises with timeout', () => {
       const list = [ 2, 60, 10, 40 ];
       const task = askForPromise ( list ).timeout ( 40, "finish" )
-            list.forEach ( (el,i) => setTimeout ( () => task[i].done(el), el )   )
+            list.forEach ( (el,i) => setTimeout ( () => task.promises[i].done(el), el )   )
             task
              .onComplete ( r  => {                                        
                                     expect ( r ).to.be.equal ('finish', 'Timeout should be applied' )

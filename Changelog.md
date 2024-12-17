@@ -1,6 +1,13 @@
 ## Release History
 
 
+### 3.0.0 ( 2024-12-17)
+- [x] Method 'each' added;
+- [x] Documentation update;
+- [x] Improvment of type definitions;
+- [x] Method 'onComplete' can receive second argument - reject function;
+
+
 
 ### 2.0.3 ( 2024-01-31)
 - [x] Fix: Folder 'dist' missing in npm package;

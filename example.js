@@ -1,10 +1,10 @@
 'use strict'
 
-var askForPromise = require ('./askForPromise');
+import askForPromise from './src/askForPromise.js'
 
 
 
- let 
+let 
        wait_3s = askForPromise()
      , wait_5s = askForPromise()
      , just_go = askForPromise()

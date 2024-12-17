@@ -168,6 +168,7 @@ describe ( 'askForPromise - general', () => {
      }) // it chain
 
 
+
   it ( 'Array of promises' , () => {
          let 
                  list = [ 1 , 2, 3 ]
@@ -178,7 +179,7 @@ describe ( 'askForPromise - general', () => {
 
          list.forEach ( (el,i) => {
                                      a = el
-                                     mission[i].done()
+                                     mission.done(i)
               })
          
          Promise
@@ -186,8 +187,29 @@ describe ( 'askForPromise - general', () => {
            .then ( () => {
                             expect ( a ).to.be.equal ( 3 )                            
                       })
-
   }) // it array of promises
+
+
+
+it ( 'Array of promises' , () => {
+        let 
+                 list = [ 1 , 2, 3 ]
+               , a = 1
+               ;
+        let mission = askForPromise ( list )
+
+         mission.each ( ({value, done},i) => {
+                                                a = value
+                                                done(i)
+                                        })
+         
+         mission.onComplete  ( res => {
+                        expect ( a ).to.be.equal ( 3 )
+                        expect ( res ).to.have.length ( 3 )
+                        expect ( res[0] ).to.be.deep.equal ( [0, 1, 2] )
+                })
+           
+    }) // it array of promises
 
 }) // describe
 

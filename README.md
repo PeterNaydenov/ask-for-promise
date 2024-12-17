@@ -110,10 +110,16 @@ const askForPromise = require ( 'ask-for-promise' )
 ```js
 let task = askForPromise()
 
-asyncFunction ( someArgument, ( err, r ) => task.done ( 'task complete' )   )
+function asyncFn ( ) {
+   // ... do something
+   // when ready -> 
+   task.done ( 'task complete' )   
+} 
 
-task.onComplete ( r => console.log(r)   )
-
+task.onComplete ( r => {
+            console.log ( r )
+            // r ===  'task complete'
+   })
 // Method 'onComplete' is sugar syntax for 'task.promise.then'.
 // task.promise.then ( r => { console.log ( r ) })
 ```
@@ -191,13 +197,15 @@ Promise all by providing array of data. Here is the example:
 
   let writeFile = askForPromise ( files )
 
-  files.forEach ( (file,i) => {
-          fs.writeFile ( file,'dummy text', () => writeFile[i].done() )
-       })
+   writeFiles.each ( ({ value, done, cancel }) => {
+                  fs.writeFile ( value,'dummy text', () => done() )
+            })
+   /**
+    *  Will execute a callback function with each item from the list
+    *  first value - 'info.txt', done and cancel functions are related to first promise
+    */
 
-writeFile.onComplete ( () => console.log ( 'DONE' )   )
-  
-
+   writeFile.onComplete ( () => console.log ( 'DONE' )   )
 /*
 Last statement is equivalent of:
 Promise
@@ -207,8 +215,7 @@ Promise
 
 ```
 
-When function askForPromise get argument will return array of askForPromises object and property 'promises' will contain array of all promises.
-
+When function askForPromise get array of data will create interally an array of askForPromise objects. One askForPromise object for each item in the list. 'onComplete' will be called when all promises are completed. With method 'each' you can execute a callback function for each item in the list.
 
 
 
@@ -224,12 +231,19 @@ With 'ask-for-promise' asking for one or many promises have almost same syntax. 
     let listOfItems = [ 'first', 'second', 'third' ]
     let manyPromises = askForPromise ( listOfItems )
 
- /* 
-     manyPromises statement is short version of this:
-     let temp  = listOfItems.map ( item => askForPromise ()   )
-     let manyPromises = temp.map ( o => o.promise )
- */
-
+   //execute single promise
+   function asyncFn () {
+            // ... do something
+            // when ready -> 
+            singlePromise.done ( 'task complete' )
+      }
+   
+   //execute many promises
+   manyPromises.each ( ({ value, done, cancel }) => {
+                     // ... do something
+                     // when ready -> 
+                     done ( 'task complete' )
+            })
 
  // Promise complete for single promise
     singlePromise.onComplete ( (r) => { console.log (r)   })
