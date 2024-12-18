@@ -29,8 +29,7 @@
   "scripts": {
     "test": "mocha test",
     "cover": "c8 mocha test",
-    "build": "rollup -c",
-    "postbuild": "tsc -p tsconfig.json"
+    "build": "rollup -c"
   },
   "repository": {
     "type": "git",
