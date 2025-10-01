@@ -1,6 +1,12 @@
 ## Release History
 
 
+
+### 3.0.1 ( 2025-10-01)
+- [x] Dev dependencies package updates;
+
+
+
 ### 3.0.0 ( 2024-12-17)
 - [x] Method 'each' added;
 - [x] Documentation update;
