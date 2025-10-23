@@ -1,7 +1,7 @@
 {
   "name": "ask-for-promise",
   "description": "promise utility library",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "license": "MIT",
   "author": "Peter Naydenov",
   "main": "src/askForPromise.js",
