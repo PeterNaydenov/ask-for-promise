@@ -1,6 +1,10 @@
 ## Release History
 
 
+### 3.1.0 ( 2025-10-23 )
+- [x] Typing updates; 
+
+
 
 ### 3.0.2 ( 2025-10-01)
 - [x] Dev dependencies package updates;
