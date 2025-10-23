@@ -2,9 +2,13 @@
     "include": ["./src/**/*"],
     "compilerOptions": {
       "allowJs": true,
-      "declaration": true,
-      "emitDeclarationOnly": true,
-      "outDir": "types",
-      "declarationMap": true
+      "declaration": false,
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "moduleResolution": "node",
+      "target": "ES2020",
+      "module": "ES2020"
     }
   }
