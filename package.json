@@ -6,7 +6,7 @@
   "author": "Peter Naydenov",
   "main": "src/askForPromise.js",
   "type": "module",
-  "types": "types/askForPromise.d.ts",
+  "types": "./types/index.d.ts",
   "exports": {
     ".": {
       "import": "./src/askForPromise.js",
@@ -29,7 +29,7 @@
   "scripts": {
     "test": "mocha test",
     "cover": "c8 mocha test",
-    "build": "rollup -c"
+    "build": "tsc --noEmit && rollup -c"
   },
   "repository": {
     "type": "git",
