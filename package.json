@@ -40,7 +40,7 @@
     "url": "https://github.com/PeterNaydenov/ask-for-promise/issues"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^28.0.8",
+    "@rollup/plugin-commonjs": "^28.0.9",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/node": "^24.9.1",
