@@ -77,7 +77,7 @@
   "keywords": [
     "promise",
     "sequence",
-    "paralel",
+    "parallel",
     "timout",
     "ttl",
     "decoupled promise"
