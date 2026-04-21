@@ -1,8 +1,12 @@
 ## Release History
 
+### 3.1.1 ( 2026-04-21)
+- [x] Fix: Types are not visible in npm package;
+
 
 ### 3.1.0 ( 2025-10-23 )
 - [x] Typing updates; 
+- [ ] Bug: Types are not visible in npm package;
 
 
 
