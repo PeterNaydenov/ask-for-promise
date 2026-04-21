@@ -9,6 +9,7 @@
   "types": "./types/index.d.ts",
   "exports": {
     ".": {
+      "types": "./types/index.d.ts",
       "import": "./src/askForPromise.js",
       "require": "./dist/ask-for-promise.cjs",
       "default": "./src/askForPromise.js"
