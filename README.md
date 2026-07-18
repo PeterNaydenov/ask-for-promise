@@ -1,8 +1,5 @@
 <img src="Ask-for-promise.png" width="100%" alt="Ask for Promise" title="Ask for Promise" align="center" />
 
- ----
-
-
 # Ask for Promise
 
 ![version](https://img.shields.io/github/package-json/v/peterNaydenov/ask-for-promise)
@@ -13,266 +10,231 @@
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/peterNaydenov/ask-for-promise)
 ![npm bundle size](https://img.shields.io/bundlephobia/min/ask-for-promise)
 
+> **Decouple a `Promise` from its `resolve` / `reject` and let any code complete it.**
 
+A standard `Promise` is born inside an executor function, and only that function can resolve or reject it. `ask-for-promise` flips that around — it returns a `Promise` together with its resolve and reject handles as plain object properties, so you can call them from anywhere: a callback, an event handler, a timer, another promise, or a sync function.
 
-Decouple **promises** from their 'resolve' and 'reject' functions and make posible to use them with any javascript function ( sync or async). 'Ask-for-promise' also provide sugar syntax for some long statements.
+## Why
 
-'Ask-for-promise' provides also an option to set a **ttl ( time to live) for the promise**. If time is up promise will close with timeout message.
+The moment an async task finishes is rarely the same place where the task was started. `ask-for-promise` is a small DX layer for those cases:
 
-```js
+- **Race conditions** — share one `done` between N parallel callbacks to emulate `Promise.race`.
+- **Long chains** — declare each step as a named `askForPromise()` and wire them up without nesting `.then`.
+- **Mixed sync / async** — a function that's sometimes sync can still call `task.done()`.
+- **Legacy callback APIs** — pass `task.done` straight to a Node-style callback.
+- **Timeouts** — race any promise against a TTL with `.timeout(ttl, fallback)`.
 
-// standard promise pattern
-let standardTask = new Promire ( (resolve,reject) => {
-       // ... wrap everything related to the promise inside this function
-       // when promise resolve - call resolve (result)
-       // or call reject ( result )
-    })
+## Features
 
-// after promise:
-standardTask.then ( item => {
-  // where 'item' is a 'result' argument sent from 'resolve' or 'reject' function. 
-})
-
-
-
-// askForPromise pattern
-let askTask = askForPromise()
-/* 
-  askTask is an object that contains
-  {
-     promise    - Promise itself
-     done       - function : Resolve function
-     cancel     - function : Reject function
-     onComplete - function : Sugar synax for askTask.promise.then
-     timeout    - function : Set time to live for the promise
-  }
-
-  You can complete the promise anywhere in your code by writing:
-  askTask.done(result)
-
-  Or reject promise by:
-  askTask.cancel(result)
-*/
-
-// after promise:
-askTask.onComplete ( item => { 
-// where 'item' is a 'result' argument sent from 'done' or 'cancel' function. 
-})
-
-
-// Execute a list of promise functions in sequence
-let task = askForPromise.sequence ( [ function1, function2, function3 ] )
-// where function1, function2, function3 are functions that return a promise
-// function1 will be executed first, then function2 and function3
-task.onComplete ( result => {
-            // result is an array of results from all promises
-   })
-
-
-// Execute a list of promise functions in parallel
-let task = askForPromise.all ( [ function1, function2, function3 ] )
-// where function1, function2, function3 are functions that return a promise
-// function1, function2 and function3 will be executed in parallel
-task.onComplete ( result => {
-            // result is an array of results from all promises in same order as they are in the array
-   })
-```
-
-
-
+- Decoupled `done` / `cancel` — call them from anywhere
+- `onComplete` sugar for `promise.then`, with an optional reject handler
+- `.timeout(ttl, fallback)` — race against a timer
+- `askForPromise(list)` — one `AskObject` for N promises, with `.each` for iteration
+- `askForPromise.sequence(list, ...args)` — run steps in order, threading results as args
+- `askForPromise.all(list, ...args)` — run steps in parallel
+- TypeScript types included
+- Zero runtime dependencies
 
 ## Installation
 
-Install by writing in your terminal:
-
-```
+```sh
 npm install ask-for-promise
-
 ```
-
-Once it has been installed, it can be used by writing this line of JavaScript:
 
 ```js
-// if you are using ES6:
+// ES modules
 import askForPromise from 'ask-for-promise'
 
-// if you are using commonJS:
-const askForPromise = require ( 'ask-for-promise' )
+// CommonJS
+const askForPromise = require('ask-for-promise')
 ```
 
+## Quick start
 
+```js
+import askForPromise from 'ask-for-promise'
 
+const task = askForPromise()
+
+// Call `done` from anywhere — even a callback API:
+setTimeout(() => task.done('done'), 1000)
+
+// `onComplete` is sugar for `task.promise.then`
+task.onComplete((result) => {
+  console.log(result) // → 'done'
+})
+```
+
+`task.promise` is a real `Promise`. `task.done` is its `resolve`. `task.cancel` is its `reject`. Anything you can do with a normal `Promise` works here too.
+
+## API
+
+### `askForPromise()` → `AskObject`
+
+Creates a single promise and returns its `AskObject`.
+
+```js
+const task = askForPromise()
+```
+
+### `askForPromise(list)` → `AskObject`
+
+Creates one promise per item in `list` and returns a single `AskObject` that controls them all. `task.promise` resolves to an array of values in input order when every sub-promise resolves.
+
+```js
+const task = askForPromise(['a', 'b', 'c'])
+```
+
+### `askForPromise.sequence(list, ...args)` → `AskObject`
+
+Runs each function in `list` one after the other. The result of each function is appended to `args` and passed to the next — useful for piping values through async steps.
+
+```js
+const steps = [loadUser, loadPosts, renderPage]
+askForPromise.sequence(steps, userId).onComplete(([user, posts, html]) => {
+  // ...
+})
+```
+
+### `askForPromise.all(list, ...args)` → `AskObject`
+
+Runs each entry in `list` in parallel. Entries can be functions (called with `...args`) or already-running promises; the result array is in declaration order.
+
+```js
+askForPromise.all([fetchA, fetchB, fetchC], token).onComplete(([a, b, c]) => {
+  // ...
+})
+```
+
+### `AskObject`
+
+| Property | Description |
+| --- | --- |
+| `promise` | The underlying `Promise`. In list mode this is `Promise.all(promises)`. |
+| `promises` | `AskObject[]` in list mode, `null` in single mode. Use `task.promises[i].done(value)` to resolve a single item. |
+| `done(value?)` | Resolves the promise(s) with `value`. In list mode, resolves every sub-promise with the same value. |
+| `cancel(reason?)` | Rejects the promise(s) with `reason`. In list mode, rejects every sub-promise with the same reason. |
+| `onComplete(resolveFn, rejectFn?)` | Sugar for `promise.then`. Pass a second function as the reject handler. |
+| `each(cbFn, ...args)` | Calls `cbFn({ value, done, cancel, timeout }, ...args)` per item. |
+| `timeout(ttl, fallback)` | Replaces `onComplete` with a race against a `ttl`ms timer; `fallback` resolves on expiry. Returns the same `AskObject` so you can keep chaining. |
 
 ## Examples
 
 ### Simple promise
 
 ```js
-let task = askForPromise()
+const task = askForPromise()
 
-function asyncFn ( ) {
-   // ... do something
-   // when ready -> 
-   task.done ( 'task complete' )   
-} 
+function asyncWork() {
+  // ... do something
+  task.done('task complete')
+}
 
-task.onComplete ( r => {
-            console.log ( r )
-            // r ===  'task complete'
-   })
-// Method 'onComplete' is sugar syntax for 'task.promise.then'.
-// task.promise.then ( r => { console.log ( r ) })
+task.onComplete((result) => {
+  console.log(result) // → 'task complete'
+})
 ```
 
-AskForPromise will return an object. Property `task.promise` will contain promise it self. Resolve function is available as `task.done` and reject function as `task.cancel`. Completion of asyncFunction will complete the promise with 'task complete' argument and will print a console message 'task complete'.
+### Promise.race, the manual way
 
-### Let's do a Promise.race without using `Promise.race`.
+A single shared `done` produces a race — the first callback to call it wins, the rest are no-ops.
+
 ```js
-let task = askForPromise()
+const task = askForPromise()
 
-async_1 ( arg, ( err, r) => task.done('1') )
-async_2 ( arg, ( err, r) => task.done('2') )
+slowAsync((err, r) => task.done('slow'))
+fastAsync((err, r) => task.done('fast'))
 
-task.onComplete ( r => console.log(r)   )
-// It's equal of:
-// task.promise.than ( r => console.log ( r )   )
+task.onComplete((winner) => {
+  console.log(winner) // → 'fast'
+})
 ```
-It's almost the same as previous example - right?
 
-### Long Promise Chain
-Let's see how looks long chain of promises:
+### Long chain without nesting
+
+Declare each step as a named variable, then wire them up:
+
 ```js
+const prepareFolders  = askForPromise()
+const writeFiles      = askForPromise()
+const updateInterface = askForPromise()
 
-// Keep definition of all promises together.
-let prepareFolders  = askForPromise()
-let writeFiles      = askForPromise()
-let updateInterface = askForPromise()
-
-// myFS is a dummy library that works with files.
-myFS.makeFolders ( folders, ( err , r ) => prepareFolders.done() )
+myFS.makeFolders(folders, () => prepareFolders.done())
 
 prepareFolders
- .onComplete ( () => {
-                  myFS.writeFiles ( files , () => writeFiles.done() )
-                  return writeFiles.promise
-              })
-.then ( () => {
-                 updateInterface ()  // if it's not async.
-                 updateInterface.done()
-                 return updateInterface.promise
-   })
-.then ( () => {
-                 console.log('DONE')
-   })
-
+  .onComplete(() => {
+    myFS.writeFiles(files, () => writeFiles.done())
+    return writeFiles.promise
+  })
+  .then(() => {
+    updateInterface()          // sync part of the work
+    updateInterface.done()
+    return updateInterface.promise
+  })
+  .then(() => {
+    console.log('DONE')
+  })
 ```
 
+### Promise with timeout
 
-
-
-### Promise with Timeout
+`timeout` returns the same `AskObject`, so you can keep chaining.
 
 ```js
-let final;
-const task = askForPromise().timeout ( 2000, 'expire' );
-// setTimeout: .timeout ( ttl, 'expireMessage'). ttl is time to live in milliseconds
+const task = askForPromise().timeout(2000, 'expire')
 
-task.onComplete ( result => {
-    if ( result === 'expire' ) final = 'timeout'                    // ... it's after timeout
-    else                       final = 'success resolved promise'
+setTimeout(() => task.done('success'), 5000)
+
+task.onComplete((result) => {
+  if (result === 'expire') console.log('timed out')
+  else                     console.log(result)
+})
+```
+
+In list mode, the timer applies to the whole group:
+
+```js
+const task = askForPromise([job1, job2, job3]).timeout(1000, 'expire')
+```
+
+### List of promises with `.each`
+
+`task.each(cb)` walks the list and hands you a per-item `{ value, done, cancel, timeout }`:
+
+```js
+const files = ['info.txt', 'general.txt', 'about.txt']
+const task  = askForPromise(files)
+
+task.each(({ value, done, cancel }) => {
+  fs.writeFile(value, 'dummy text', (err) => {
+    if (err) cancel(err)
+    else      done()
+  })
 })
 
+task.onComplete(() => console.log('DONE'))
 ```
 
+`task.promise` here is equivalent to `Promise.all(task.promises.map(p => p.promise))`. To resolve a single item rather than all of them, call `task.promises[i].done(value)`.
 
+## TypeScript
 
+Type definitions are bundled — no extra install.
 
+```ts
+import askForPromise, { AskObject } from 'ask-for-promise'
 
-### Promise All
-
-Promise all by providing array of data. Here is the example:
-```js
-
-  const files = [ 'info.txt', 'general.txt', 'about.txt' ]
-
-  let writeFile = askForPromise ( files )
-
-   writeFiles.each ( ({ value, done, cancel }) => {
-                  fs.writeFile ( value,'dummy text', () => done() )
-            })
-   /**
-    *  Will execute a callback function with each item from the list
-    *  first value - 'info.txt', done and cancel functions are related to first promise
-    */
-
-   writeFile.onComplete ( () => console.log ( 'DONE' )   )
-/*
-Last statement is equivalent of:
-Promise
-   .all ( writeFile.promises )
-   .then ( () => console.log ( 'DONE' )   )
-*/
-
+const task: AskObject = askForPromise()
 ```
-
-When function askForPromise get array of data will create interally an array of askForPromise objects. One askForPromise object for each item in the list. 'onComplete' will be called when all promises are completed. With method 'each' you can execute a callback function for each item in the list.
-
-
-
-
-### Control of single promise and many promises
-With 'ask-for-promise' asking for one or many promises have almost same syntax. There is some code sample to illustrate this:
-```js
-
-  // ask for single promise
-     let singlePromise = askForPromise ()
-
- // ask for list of promises
-    let listOfItems = [ 'first', 'second', 'third' ]
-    let manyPromises = askForPromise ( listOfItems )
-
-   //execute single promise
-   function asyncFn () {
-            // ... do something
-            // when ready -> 
-            singlePromise.done ( 'task complete' )
-      }
-   
-   //execute many promises
-   manyPromises.each ( ({ value, done, cancel }) => {
-                     // ... do something
-                     // when ready -> 
-                     done ( 'task complete' )
-            })
-
- // Promise complete for single promise
-    singlePromise.onComplete ( (r) => { console.log (r)   })
-
- // All promises for the array are completed.
-    manyPromises.onComplete ( (r) => { console.log (r)   })
-
-```
-
-
-
-
-
-### More
-For more examples please visit "**test**" folder of the project.
-
-
-
-
-## External Links
-- [History of changes](https://github.com/PeterNaydenov/ask-for-promise/blob/master/Changelog.md)
-
-
-
-## Credits
-'ask-for-promise' was created by Peter Naydenov.
-
-
-
 
 ## License
-'ask-for-promise' is released under the [MIT License](http://opensource.org/licenses/MIT).
+
+MIT — see [LICENSE](./LICENSE).
+
+## Credits
+
+Created by [Peter Naydenov](https://github.com/PeterNaydenov).
+
+## Changelog
+
+[Changelog.md](./Changelog.md)
