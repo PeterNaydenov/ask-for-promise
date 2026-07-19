@@ -191,27 +191,124 @@ describe ( 'askForPromise - general', () => {
 
 
 
-it ( 'Array of promises' , () => {
-        let 
-                 list = [ 1 , 2, 3 ]
-               , a = 1
-               ;
-        let mission = askForPromise ( list )
+it ( 'Array of promises (each)', async () => {
+        const list = [ 1, 2, 3 ]
+        let a = 1
 
-         mission.each ( ({value, done},i) => {
-                                                a = value
-                                                done(i)
-                                        })
-         
-         mission.onComplete  ( res => {
-                        expect ( a ).to.be.equal ( 3 )
-                        expect ( res ).to.have.length ( 3 )
-                        expect ( res[0] ).to.be.deep.equal ( [0, 1, 2] )
+        const mission = askForPromise ( list )
+
+        mission.each ( ({value, done}, index) => {
+                        a = value
+                        expect ( index ).to.be.equal ( list.indexOf ( value ) )
+                        done ( value )
                 })
-           
-    }) // it array of promises
 
-}) // describe
+        const res = await mission.promise
+        expect ( a ).to.be.equal ( 3 )
+        expect ( res ).to.have.length ( 3 )
+        expect ( res[0] ).to.be.equal ( 1 )
+        expect ( res ).to.be.deep.equal ( list )
+    }) // it array of promises (each)
+
+}) // describe general
+
+
+
+
+// ============================================================================
+// Regression: `sequence` and `all` used to silently swallow rejections from
+// their step functions. A rejected step promise left the returned task pending
+// forever — the rejection never reached `task.promise`, so calling code had no
+// way to detect the failure. Same problem for synchronous throws inside a
+// step. Fix: catch both cases and forward them to `task.cancel(err)`.
+// ============================================================================
+
+describe ( 'sequence / all rejection handling', () => {
+
+    it ( 'sequence rejects the task when a step returns a rejected promise', async () => {
+        const steps = [
+                    () => Promise.resolve ( 1 )
+                  , () => Promise.reject ( new Error ( 'step 2 failed' ) )
+                  , () => Promise.resolve ( 3 )   // should never run
+                ]
+        const task = askForPromise.sequence ( steps, 0 )
+
+        let caught
+        try { await task.promise }
+        catch ( err ) { caught = err }
+
+        expect ( caught ).to.be.instanceof ( Error )
+        expect ( caught.message ).to.be.equal ( 'step 2 failed' )
+    })
+
+
+    it ( 'all rejects the task when any step returns a rejected promise', async () => {
+        const fns = [
+                    () => Promise.resolve ( 1 )
+                  , () => Promise.reject ( new Error ( 'parallel step failed' ) )
+                  , () => Promise.resolve ( 3 )
+                ]
+        const task = askForPromise.all ( fns, 0 )
+
+        let caught
+        try { await task.promise }
+        catch ( err ) { caught = err }
+
+        expect ( caught ).to.be.instanceof ( Error )
+        expect ( caught.message ).to.be.equal ( 'parallel step failed' )
+    })
+
+
+    it ( 'sequence rejects the task when a step throws synchronously', async () => {
+        const steps = [
+                    () => Promise.resolve ( 1 )
+                  , () => { throw new Error ( 'sync throw in sequence' ) }
+                  , () => Promise.resolve ( 3 )   // should never run
+                ]
+        const task = askForPromise.sequence ( steps, 0 )
+
+        let caught
+        try { await task.promise }
+        catch ( err ) { caught = err }
+
+        expect ( caught ).to.be.instanceof ( Error )
+        expect ( caught.message ).to.be.equal ( 'sync throw in sequence' )
+    })
+
+
+    it ( 'all rejects the task when a step function throws synchronously', async () => {
+        const fns = [
+                    () => Promise.resolve ( 1 )
+                  , () => { throw new Error ( 'sync throw in all' ) }
+                  , () => Promise.resolve ( 3 )
+                ]
+        const task = askForPromise.all ( fns, 0 )
+
+        let caught
+        try { await task.promise }
+        catch ( err ) { caught = err }
+
+        expect ( caught ).to.be.instanceof ( Error )
+        expect ( caught.message ).to.be.equal ( 'sync throw in all' )
+    })
+
+
+    it ( 'sequence rejects when a list entry is not a function (instead of throwing)', async () => {
+        // Before the fix: `n.value is not a function` propagated out of
+        // askForPromise.sequence as a synchronous throw — there was no task
+        // to reject, so callers had no way to catch it. Now the error is
+        // surfaced via task.promise so the contract is uniform.
+        const steps = [ () => Promise.resolve ( 1 ), 'not a function' ]
+        const task = askForPromise.sequence ( steps, 0 )
+
+        let caught
+        try { await task.promise }
+        catch ( err ) { caught = err }
+
+        expect ( caught ).to.be.instanceof ( TypeError )
+    })
+
+}) // describe rejection handling
 
 
 
