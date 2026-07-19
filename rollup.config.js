@@ -19,17 +19,13 @@ export default [
 		]
 	},
 
-	// CommonJS (for Node) and ES module (for bundlers) build.
-	// (We could have three entries in the configuration array
-	// instead of two, but it's quicker to generate multiple
-	// builds from a single configuration where possible, using
-	// an array for the `output` option, where we can specify
-	// `file` and `format` for each target)
+	// CommonJS (for Node). ES module consumers are served the raw
+	// `src/askForPromise.js` via the `exports` field in package.json,
+	// so no ESM dist build is needed.
 	{
 		input: 'src/askForPromise.js',
 		output: [
-			{ file: 'dist/ask-for-promise.cjs'    , format: 'cjs' },
-			{ file: 'dist/ask-for-promise.esm.mjs', format: 'es' }
+			{ file: 'dist/ask-for-promise.cjs'    , format: 'cjs' }
 		],
 		plugins: [ terser() ]
 	}
