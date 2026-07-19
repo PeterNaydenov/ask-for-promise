@@ -31,16 +31,16 @@ description: |
 3. **Generate code that follows the real API shape**:
    - ESM import: `import askForPromise from 'ask-for-promise'` (CJS: `require('ask-for-promise')`)
    - List mode returns ONE `AskObject`: `task.promise` is `Promise.all(...)`, `task.promises` is the array of per-item `AskObject`s
-   - `.each` callback signature: `({ value, done, cancel, timeout }, index, ...args)`
+   - `.each` callback signature: `({ value, done, cancel, timeout }, index, ...args)` — in single mode `value` is `null` and `index` is `undefined` (the second positional argument is still present, just `undefined`)
    - In list mode, `task.done(v)` resolves EVERY sub-promise with `v`; use `task.promises[i].done(v)` to resolve individually
-   - `task.timeout(ttl, fallback)` only rewires `onComplete` — `task.promise` itself is NOT raced. Use `task.onComplete(...)` if you want the timeout behavior to apply
+   - `task.timeout(ttl, fallback)` arms a timer; on expiry both `onComplete` and `task.promise` settle with `fallback` (they're consistent — use whichever fits the call site). In list mode each still-pending sub-promise is replaced with `fallback`.
    - `onComplete(fx, rejectFx?)` — pass a second function for the reject branch; with one arg it only listens to resolve
 
 4. **Avoid known gotchas in the answer** (don't surface them all — only the one relevant to the current example):
    - `sequence` / `all` reject the task on any step failure (rejection OR sync throw). Don't suggest the old "swallowed silently" behavior — it was a bug.
    - `sequence` appends each step's resolved value to the next step's args. If the consumer doesn't want that, point them to `all` instead.
    - In list mode, `task.done()` with no value resolves with `undefined`. Mention this if it's surprising.
-   - `each` on a single-mode `AskObject` calls the callback once with `value: null` and no `index` — it is NOT a no-op (despite the JSDoc typo that used to call it one).
+   - `each` on a single-mode `AskObject` calls the callback once with `value: null` and `index: undefined` (the second positional argument is still present) — it is NOT a no-op (despite the old JSDoc that used to call it one).
 
 5. **If the use case doesn't fit** any pattern, say so. ask-for-promise is a thin decoupled-promise helper, not a general async framework. For retry / abort / mid-flight cancel, recommend a different library.
 
