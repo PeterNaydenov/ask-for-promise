@@ -1,5 +1,22 @@
 ## Release History
 
+
+
+### 3.2.0 ( 2026-07-19)
+- [x] `each` callback now receives the item `index` as a second argument;
+- [x] Removed the `state` field from the `each` callback — it was always `'pending'` and never reflected the real promise state;
+- [x] Test 'Array of promises (each)' was passing on assertions that never ran; rewritten as `async` and now actually verified;
+- [x] Fix: `.timeout()` now also calls `task.done(expMsg)` when the timer fires, so the underlying `task.promise` settles with the fallback value (previously it stayed pending, leaking any in-flight resources and disagreeing with `onComplete`); for list mode each still-pending sub-promise is replaced with the fallback, while sub-promises that already settled keep their real value;
+- [x] Fix: dropping a `task` with an active `.timeout()` no longer retains the askObject (and the per-item askObjects in list mode) for the full `ttl`. Wrapped `done`/`cancel` now `clearTimeout` the active handle on settlement, and `_timeout` holds the askObject via a `WeakRef` so the setTimeout callback doesn't pin it. All internal methods that used to capture `askObject` via closure now use `this` (or a WeakRef), since V8's tracing GC does not reclaim cycles where a closure on the object captures the object itself. Verified with `--expose-gc` and `FinalizationRegistry`: askObjects are now collected as soon as the user drops the reference;
+- [x] Fix: `.timeout()` no longer ships a no-op `Promise.resolve(main)` call;
+- [x] Fix: `askForPromise.sequence` and `askForPromise.all` used to silently swallow rejections from their step functions — a rejected step promise left the returned task pending forever, and a synchronous `throw` inside a step propagated out of the function instead of rejecting the task. Both now forward step failures (rejections, sync throws, and bad-list-entry TypeErrors) to `task.cancel(err)`, so calling code can `await task.promise` uniformly;
+- [x] Build: removed unused `@types/node` devDependency;
+- [x] Build: added `prepublishOnly` script so `dist/` is always rebuilt before publish;
+- [x] New: added `.agents/skills/ask-for-promise/` — a Mavis skill that helps AI agents route a developer's use case to the right API (single mode, `sequence`, `all`, `timeout`, list mode with `.each`) and avoid the known gotchas. Lint clean; verified against a race-3-API-calls eval (with-skill picked single mode, surfaced the `done()`-with-no-value gotcha, and gave a tighter answer than the no-skill baseline);
+
+
+
+
 ### 3.1.1 ( 2026-04-21)
 - [x] Fix: Types are not visible in npm package;
 
