@@ -30,7 +30,8 @@
   "scripts": {
     "test": "mocha test",
     "cover": "c8 mocha test",
-    "build": "tsc --noEmit && rollup -c"
+    "build": "tsc --noEmit && rollup -c",
+    "prepublishOnly": "npm test && npm run build"
   },
   "repository": {
     "type": "git",
@@ -44,7 +45,6 @@
     "@rollup/plugin-commonjs": "^29.0.3",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^1.0.0",
-    "@types/node": "^26.1.0",
     "c8": "^11.0.0",
     "chai": "6.2.2",
     "mocha": "^11.7.6",
@@ -78,7 +78,7 @@
     "promise",
     "sequence",
     "parallel",
-    "timout",
+    "timeout",
     "ttl",
     "decoupled promise"
   ],
