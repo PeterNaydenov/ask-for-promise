@@ -115,8 +115,8 @@ askForPromise.all([fetchA, fetchB, fetchC], token).onComplete(([a, b, c]) => {
 | `done(value?)` | Resolves the promise(s) with `value`. In list mode, resolves every sub-promise with the same value. |
 | `cancel(reason?)` | Rejects the promise(s) with `reason`. In list mode, rejects every sub-promise with the same reason. |
 | `onComplete(resolveFn, rejectFn?)` | Sugar for `promise.then`. Pass a second function as the reject handler. |
-| `each(cbFn, ...args)` | Calls `cbFn({ value, done, cancel, timeout }, ...args)` per item. |
-| `timeout(ttl, fallback)` | Replaces `onComplete` with a race against a `ttl`ms timer; `fallback` resolves on expiry. Returns the same `AskObject` so you can keep chaining. |
+| `each(cbFn, ...args)` | Calls `cbFn({ value, done, cancel, timeout }, index, ...args)` per item — `index` is the position in the input list. |
+| `timeout(ttl, fallback)` | Arms a `ttl`-millisecond timer. On expiry, the task settles with `fallback`: `onComplete` is rewired to return the fallback, **and** the underlying `task.promise` is settled with the same value (so `await task.promise` and `task.onComplete(...)` agree). In list mode, each still-pending sub-promise is replaced with `fallback` while sub-promises that already settled keep their real value. Returns the same `AskObject` so you can keep chaining. |
 
 ## Examples
 
@@ -199,13 +199,14 @@ const task = askForPromise([job1, job2, job3]).timeout(1000, 'expire')
 
 ### List of promises with `.each`
 
-`task.each(cb)` walks the list and hands you a per-item `{ value, done, cancel, timeout }`:
+`task.each(cb)` walks the list and hands you a per-item `{ value, done, cancel, timeout }` plus the item's `index`:
 
 ```js
 const files = ['info.txt', 'general.txt', 'about.txt']
 const task  = askForPromise(files)
 
-task.each(({ value, done, cancel }) => {
+task.each(({ value, done, cancel }, index) => {
+  console.log(`writing ${value} (#${index})`)
   fs.writeFile(value, 'dummy text', (err) => {
     if (err) cancel(err)
     else      done()
