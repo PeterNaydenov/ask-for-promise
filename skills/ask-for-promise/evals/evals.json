@@ -1,0 +1,34 @@
+[
+  {
+    "skills": ["ask-for-promise"],
+    "query": "Using ask-for-promise, call three APIs and use whichever answers first. If none answers within 3 seconds, fall back to a cached value.",
+    "files": [],
+    "expected_behavior": [
+      "Uses a single askForPromise() task and settles it with task.done / task.cancel from each API call",
+      "Chains .timeout(3000, cachedValue) on the task",
+      "Explains that a timeout resolves with the fallback rather than rejecting",
+      "Does not invent abort or cancellation of the losing requests"
+    ]
+  },
+  {
+    "skills": ["ask-for-promise"],
+    "query": "I have a list of 10 file paths. With ask-for-promise, read each one with fs.readFile (callback style) and give me all contents in the same order. Each file should give up after 1 second and return null.",
+    "files": [],
+    "expected_behavior": [
+      "Uses askForPromise(paths) with task.each(({ value, done, cancel, timeout }) => ...)",
+      "Calls the per-item timeout(1000, null) from the each context, not a list-level timeout",
+      "Awaits task.promise and states that results keep the input order",
+      "Does not pass the list task's done as a bare callback"
+    ]
+  },
+  {
+    "skills": ["ask-for-promise"],
+    "query": "Chain these with ask-for-promise without nesting: create folders, then write files, then log 'Done'. Both steps take Node-style callbacks.",
+    "files": [],
+    "expected_behavior": [
+      "Declares one named askForPromise() task per step",
+      "Chains with task.promise.then(...) and returns the next task's promise",
+      "Does not chain off onComplete (it returns undefined)"
+    ]
+  }
+]
