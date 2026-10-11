@@ -9,9 +9,14 @@
   "types": "./types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
-      "import": "./src/askForPromise.js",
-      "require": "./dist/ask-for-promise.cjs",
+      "import": {
+        "types": "./types/index.d.ts",
+        "default": "./src/askForPromise.js"
+      },
+      "require": {
+        "types": "./types/index.d.cts",
+        "default": "./dist/ask-for-promise.cjs"
+      },
       "default": "./src/askForPromise.js"
     },
     "./package.json": "./package.json",
@@ -23,6 +28,7 @@
     "src/*.js",
     "dist/*",
     "types/*",
+    "skills/**",
     "LICENSE",
     "README.md",
     "package.json"
@@ -48,7 +54,7 @@
     "c8": "^12.0.0",
     "chai": "6.3.0",
     "mocha": "^12.0.3",
-    "rollup": "^4.64.3",
+    "rollup": "^4.64.5",
     "typescript": "^7.0.2"
   },
   "directories": {
