@@ -14,9 +14,9 @@
 
 
 /**
+ * Per-item context passed to the `each` callback. Carries the
+ * underlying value plus per-item controls (`done` / `cancel` / `timeout`).
  * @typedef {Object} EachContext
- * @description Per-item context passed to the `each` callback. Carries the
- *   underlying value plus per-item controls (`done` / `cancel` / `timeout`).
  * @property {any} value - The list item passed to `askForPromise(list)`. In
  *   single-promise mode this is `null`.
  * @property {(value?: any) => void} done - Resolves this single item. In list
@@ -26,29 +26,53 @@
  * @property {(reason?: any) => void} cancel - Rejects this single item. If
  *   a per-item or list-level `.timeout()` is active, also clears the
  *   pending timer for this item.
- * @property {(ttl: number, expMsg: any) => AskObject} timeout - Per-item
- *   timeout helper. In single mode the returned `AskObject` is the same one.
+ * @property {(ttl: number, expMsg?: any) => AskObject} timeout - Per-item
+ *   timeout helper. Returns the item's `AskObject` (in single mode, the
+ *   task itself).
  */
 
 
 
 /**
+ * Callback invoked by `askObject.each()`.
  * @callback EachCallback
- * @description Callback invoked once per list item by `askObject.each()`.
  * @param {EachContext} ctx - Per-item context (value + done / cancel / timeout).
  * @param {number | undefined} index - Position of the item in the input list.
  *   `undefined` when `each` is called on a single-mode `AskObject`
  *   (no list).
  * @param {...any} args - Extra arguments forwarded from `task.each(cbFn, ...args)`.
+ * @returns {void}
  */
 
 
 
 /**
+ * Callback invoked once per list item by `askListObject.each()`.
+ * @callback EachListCallback
+ * @param {EachContext} ctx - Per-item context (value + done / cancel / timeout).
+ * @param {number} index - Position of the item in the input list.
+ * @param {...any} args - Extra arguments forwarded from `task.each(cbFn, ...args)`.
+ * @returns {void}
+ */
+
+
+
+/**
+ * A step for `askForPromise.sequence` / `askForPromise.all`.
+ * Receives the extra arguments (and, in `sequence`, the previous step's
+ * result as the last argument). May return a promise or a plain value.
+ * @callback StepFunction
+ * @param {...any} args
+ * @returns {any}
+ */
+
+
+
+/**
+ * Object with a promise and related helper functions. Returned
+ * by `askForPromise()`, `askForPromise(list)`, `askForPromise.sequence(...)`
+ * and `askForPromise.all(...)`.
  * @typedef {Object} AskObject
- * @description Object with a promise and related helper functions. Returned
- *   by `askForPromise()`, `askForPromise(list)`, `askForPromise.sequence(...)`
- *   and `askForPromise.all(...)`.
  * @property {Promise<any>} promise - The underlying promise. In list mode this
  *   is `Promise.all(promises)` and resolves to an array of values in input
  *   order once every sub-promise resolves.
@@ -68,7 +92,7 @@
  *   present, just `undefined`).
  * @property {(fx: (result: any) => void, rejectFx?: ((error: any) => void) | null) => void} onComplete
  *   Sugar for `promise.then`. Pass a second function as the reject handler.
- * @property {(ttl: number, expMsg: any) => AskObject} timeout - Arms a
+ * @property {(ttl: number, expMsg?: any) => AskObject} timeout - Arms a
  *   `ttl`-millisecond timer. On expiry, the task settles with `expMsg`:
  *   `onComplete` is rewired to return the fallback, AND the underlying
  *   `task.promise` is also settled with `expMsg` (so `await task.promise`
@@ -81,13 +105,61 @@
 
 
 /**
+ * `AskObject` returned by `askForPromise(list)`. Same API as
+ * `AskObject`, with list-specific types.
+ * @typedef {Object} AskListObject
+ * @property {Promise<any[]>} promise - `Promise.all` over every sub-promise.
+ *   Resolves to an array of values in input order.
+ * @property {AskObject[]} promises - One `AskObject` per list item. Use
+ *   `task.promises[i].done(value)` to resolve a single item.
+ * @property {(value?: any) => void} done - Resolves every sub-promise with
+ *   the same value. Clears the list-level timer, if any.
+ * @property {(reason?: any) => void} cancel - Rejects every sub-promise with
+ *   the same reason. Clears the list-level timer, if any.
+ * @property {(cbFn: EachListCallback, ...args: any[]) => void} each - Calls
+ *   `cbFn({ value, done, cancel, timeout }, index, ...args)` for each item.
+ * @property {(fx: (result: any) => void, rejectFx?: ((error: any) => void) | null) => void} onComplete
+ *   Sugar for `promise.then`. Pass a second function as the reject handler.
+ * @property {(ttl: number, expMsg?: any) => AskListObject} timeout - Arms a
+ *   list-level timer. On expiry each still-pending sub-promise settles with
+ *   `expMsg`. Returns the same `AskListObject` so the call can be chained.
+ */
+
+
+
+/**
+ * Internal slot for the active timer. Not part of the public API.
+ * @private
+ * @typedef {Object} TimerSlot
+ * @property {ReturnType<typeof setTimeout> | null} _activeTimer
+ */
+
+
+
+/**
+ * Creates a single-promise `AskObject`.
+ * @overload
+ * @returns {AskObject}
+ */
+/**
+ * Creates one sub-promise per item in `list`, bundled into a single
+ * `AskListObject` whose `promise` is `Promise.all(...)`.
+ * @overload
+ * @param {any[]} list - List of items; each gets its own sub-promise.
+ * @returns {AskListObject}
+ */
+/**
+ * @overload
+ * @param {any[] | null} [list] - Optional. List of items; omit for a single promise.
+ * @returns {AskObject}
+ */
+/**
  * Creates an `AskObject` with a single promise, or one promise per item in
  * `list` (in which case all sub-promises are bundled into a single
- * `AskObject` whose `promise` is `Promise.all(...)`).
- * @function askForPromise
- * @param {Array<any>} [list] - Optional. List of items; each gets its own
+ * `AskListObject` whose `promise` is `Promise.all(...)`).
+ * @param {any[] | null} [list] - Optional. List of items; each gets its own
  *   sub-promise. Omit for a single promise.
- * @returns {AskObject} Object with the promise and related helper functions.
+ * @returns {AskObject | AskListObject} Object with the promise and related helper functions.
  */
 function askForPromise ( list ) {
         if ( list ) return _manyPromises ( list )
@@ -105,7 +177,7 @@ function askForPromise ( list ) {
  * synchronously) the task rejects with that error and the chain stops.
  * @function sequence
  * @memberof askForPromise
- * @param {Array<(...args: any[]) => any>} list - Steps; each is expected to
+ * @param {StepFunction[]} list - Steps; each is expected to
  *   return a promise (a non-thenable return is accepted via `Promise.resolve`
  *   and treated as a resolved value).
  * @param {...any} args - Arguments passed to the first step. Each step
@@ -117,12 +189,17 @@ function askForPromise ( list ) {
  askForPromise.sequence = function promiseInSequence ( list, ...args ) {
   const
         task = askForPromise ()
-      , result = []
+      , /** @type {any[]} */ result = []
       ;
 
+  /** @param {StepFunction[]} n */
   function* listGen ( n ) {   for ( const el of n ) { yield el }}
   const g = listGen ( list );
 
+  /**
+   * @param {IteratorResult<StepFunction>} n
+   * @param {...any} args
+   */
   function wait ( n, ...args ) {   // Recursive function for calling function list in sequence
       if ( n.done ) {
                task.done ( result )
@@ -157,7 +234,7 @@ function askForPromise ( list ) {
  * throws synchronously) the task rejects with that error.
  * @function all
  * @memberof askForPromise
- * @param {Array<((...args: any[]) => any) | Promise<any>>} list - Steps to
+ * @param {Array<StepFunction | PromiseLike<any>>} list - Steps to
  *   run in parallel; each is either a function or a thenable.
  * @param {...any} args - Arguments passed to each step function. Ignored
  *   for thenable entries.
@@ -167,8 +244,9 @@ function askForPromise ( list ) {
 askForPromise.all = function promiseAll ( list, ...args ) {
   const
         task = askForPromise ()
-      , result = []
+      , /** @type {any[]} */ result = []
       ;
+  /** @type {Promise<any>[]} */
   let r;
   try {
       r = list.map ( (n,i) => {
@@ -206,7 +284,11 @@ askForPromise.all = function promiseAll ( list, ...args ) {
  *   `undefined`, matching the list-mode `each` signature).
  */
 function _singlePromise () {
-  let  done, cancel;
+  /** @type {(value?: any) => void} */
+  let  done
+  /** @type {(reason?: any) => void} */
+  let  cancel
+  ;
   const x = new Promise ( (resolve, reject ) => {
                                                   done   = resolve
                                                   cancel = reject
@@ -216,13 +298,16 @@ function _singlePromise () {
     // done/cancel, the timer-setting setter in _timeout, and the
     // askObject's own self-references all live on the same object — which
     // means dropping the askObject reference releases the whole cycle.
+    /** @type {AskObject & TimerSlot} */
     const askObject = {
                promise       : x
              , promises      : null
              , _activeTimer  : null
+             , done          : () => {}
+             , cancel        : () => {}
              , each          : () => {}
              , onComplete    : _after(x)
-             , timeout       : () => {}
+             , timeout       : _timeout ( false )
            }
 
     // Use a WeakRef so the wrapped done/cancel (and the setTimeout callback
@@ -244,8 +329,10 @@ function _singlePromise () {
     askObject.done   = function ( value )  { const o = askObjectRef.deref(); if (o !== undefined && o._activeTimer !== null) { clearTimeout(o._activeTimer); o._activeTimer = null } done(value)   }
     askObject.cancel = function ( reason ) { const o = askObjectRef.deref(); if (o !== undefined && o._activeTimer !== null) { clearTimeout(o._activeTimer); o._activeTimer = null } cancel(reason) }
 
-    askObject.timeout = _timeout ( false )
-    askObject.each = function (cbFn, ...args) { cbFn({value: null, done: askObject.done, cancel: askObject.cancel, timeout: this.timeout}, ...args) }
+    // `timeout` is wrapped so it runs with the askObject as `this` (it is
+    // called as `ctx.timeout(...)`). `undefined` fills the `index` slot so
+    // extra args land in the same position as in list mode.
+    askObject.each = function (cbFn, ...args) { cbFn({value: null, done: askObject.done, cancel: askObject.cancel, timeout: (ttl, expMsg) => this.timeout(ttl, expMsg)}, undefined, ...args) }
 
     return askObject
    } // _singlePromise func.
@@ -259,7 +346,7 @@ function _singlePromise () {
  * @private
  * @param {Array<any>} list - List of items; each becomes a separate
  *   sub-promise.
- * @returns {AskObject} `AskObject` whose `promise` is `Promise.all` over
+ * @returns {AskListObject} `AskListObject` whose `promise` is `Promise.all` over
  *   every sub-promise, `promises` is the array of sub-`AskObject`s, and
  *   `done` / `cancel` settle every sub-promise with the same value.
  */
@@ -267,8 +354,10 @@ function _singlePromise () {
                                     let listOfPromiseObjects = list.map ( el => _singlePromise() )
                                     let listOfPromises   = listOfPromiseObjects.map ( o => o.promise )
 
-                                    listOfPromiseObjects [ 'promises' ] = listOfPromiseObjects
-                                    let onComplete = _after ( Promise.all (listOfPromises) )
+                                    // One shared `Promise.all` for `promise` and `onComplete`. A
+                                    // second, unobserved `Promise.all` would reject unhandled
+                                    // whenever an item is cancelled.
+                                    const all = Promise.all ( listOfPromises )
 
                                     // The original input list is kept on the askObject so that
                                     // `each` can read the per-item value via `this._list[i]`
@@ -276,15 +365,17 @@ function _singlePromise () {
                                     // the list in a closure that's stored on the askObject
                                     // would create an unreachable cycle that V8 doesn't
                                     // collect.)
-                                    /** @type {AskObject} */
+                                    /** @type {AskListObject & TimerSlot & { _list: any[] }} */
                                     const askObject = {
-                                                  promise       : Promise.all ( listOfPromises )
+                                                  promise       : all
                                                 , promises      : listOfPromiseObjects
                                                 , _list         : list
                                                 , _activeTimer  : null
+                                                , done          : () => {}
+                                                , cancel        : () => {}
                                                 , each          : () => {}
-                                                , onComplete    : onComplete
-                                                , timeout       : () => {}
+                                                , onComplete    : _after ( all )
+                                                , timeout       : _timeout ( true )
                                             }
                                     // Wrap list-level done/cancel so they clear the list-level
                                     // timer (if any) before settling every sub-promise. Per-item
@@ -307,14 +398,13 @@ function _singlePromise () {
                                                                                         value: this._list[i],
                                                                                         done:  prom.done,
                                                                                         cancel: prom.cancel,
-                                                                                        timeout: prom.timeout
+                                                                                        timeout: ( ttl, expMsg ) => prom.timeout ( ttl, expMsg )
                                                                                     },
                                                                                     i,
                                                                                     ...args
                                                                                   ))
                                     }
 
-                                    askObject.timeout = _timeout ( true )
                                     return askObject
    } // _manyPromises func.
 
@@ -348,9 +438,9 @@ return function onComplete ( fx, rejectFx=null ) {
  * @private
  * @param {boolean} isList - `true` to race the `Promise.all` of every
  *   sub-promise, `false` to race the single promise.
- * @returns {(ttl: number, expMsg: any) => AskObject} A function to be
- *   invoked as a method on the `AskObject`; returns the same `AskObject`
- *   so calls can be chained.
+ * @returns {<T extends AskObject>(this: T & TimerSlot, ttl: number, expMsg?: any) => T}
+ *   A function to be invoked as a method on the `AskObject`; returns the
+ *   same `AskObject` so calls can be chained.
  */
 function _timeout ( isList ) {
   /**
@@ -365,10 +455,12 @@ function _timeout ( isList ) {
    * captures the object — that's why every method on the askObject uses
    * `this` or a WeakRef, never a direct closure capture.)
    *
+   * @template {AskObject} T
+   * @this {T & TimerSlot}
    * @param {number} ttl - Timeout duration in milliseconds.
-   * @param {any} expMsg - Value that resolves the race when the timer
+   * @param {any} [expMsg] - Value that resolves the race when the timer
    *   fires before the underlying promise(s).
-   * @returns {AskObject} The same `AskObject` (for chaining).
+   * @returns {T} The same `AskObject` (for chaining).
    */
   return function timeout( ttl, expMsg ) {
             const askObjectRef = new WeakRef(this)
@@ -376,10 +468,12 @@ function _timeout ( isList ) {
             // `main` is the underlying promise(s) the timer races against.
             // In single mode it's the same promise as `this.promise`;
             // in list mode it's a fresh `Promise.all` over every sub-promise.
+            /** @type {Promise<any>} */
             let main
-            if ( isList ) main = Promise.all( this.promises.map ( o => o.promise ) )
+            if ( isList ) main = Promise.all( /** @type {AskObject[]} */ ( this.promises ).map ( o => o.promise ) )
             else          main = this.promise
 
+            /** @type {ReturnType<typeof setTimeout> | undefined} */
             let timer
             const timeout = new Promise ( (resolve, reject) => {
                                     timer = setTimeout ( () => {
@@ -396,9 +490,15 @@ function _timeout ( isList ) {
             // Hand the timer handle to the askObject so the wrapped
             // done/cancel can release the askObject immediately on
             // settlement, instead of waiting for the timer to fire.
-            this._activeTimer = timer
-            main.then ( () => clearTimeout(timer)   )
-            this [ 'onComplete'] = _after ( Promise.race ([main, timeout])   )
+            this._activeTimer = /** @type {ReturnType<typeof setTimeout>} */ ( timer )
+            // Clear the timer on rejection too. Both branches are needed:
+            // a `.then` without a reject handler would itself reject unhandled.
+            main.then ( () => clearTimeout(timer), () => clearTimeout(timer) )
+            const race = Promise.race ([main, timeout])
+            // The race is internal: its rejection reaches the caller through
+            // `promise` and `onComplete(fx, rejectFx)`, so mark it handled here.
+            race.catch ( () => {} )
+            this [ 'onComplete'] = _after ( race )
             return this
         }
 } // _timeout func.
