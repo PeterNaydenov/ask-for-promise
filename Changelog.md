@@ -2,6 +2,23 @@
 
 
 
+### 3.2.1 ( 2026-10-11)
+- [x] Fix: `require('ask-for-promise')` was typed with the ESM declarations (TypeScript reported the default export as not callable). Added `types/index.d.cts` and per-condition `types` in `exports`;
+- [x] Fix: `askForPromise.sequence` / `askForPromise.all` types rejected valid steps (functions with parameters, plain return values, promises in `all`);
+- [x] Types: `each` callback is now typed (`EachContext`, `EachCallback`); `askForPromise(list)` returns `AskListObject` with `promises: AskObject[]` and a numeric `index`; `timeout` returns the same object type; `expMsg` is optional;
+- [x] Fix: rejections that the caller handled still crashed Node with an unhandled rejection: (1) any rejection in list mode — `onComplete` used a second, unobserved `Promise.all`; (2) `cancel()` on a task with an active `.timeout()` — the internal timer cleanup had no reject branch. List mode now shares one `Promise.all`, the timer is cleared on rejection too, and the internal timeout race is marked handled. Tests in `test/05.rejections.test.js`;
+- [x] Docs: README "Long chain" example chained off `onComplete` (which returns `undefined`) and called a task object as a function. Rewritten with `task.promise.then`;
+- [x] Fix: calling `timeout` from the `each` callback context threw `TypeError` (lost `this`), in both single and list mode;
+- [x] Fix: single-mode `each` now passes `undefined` as the `index` argument, as documented, so extra args no longer shift into the `index` slot;
+- [x] Build: `tsc --noEmit` now checks the shipped declarations against type tests in `test/types/` (ESM and CJS, via the package `exports`);
+- [x] JSDoc: source now passes a strict `checkJs` type check (enabled in `tsconfig.json`, so the build enforces it). Added `AskListObject`, `EachListCallback`, `StepFunction` typedefs and `@overload`s for `askForPromise`;
+- [x] Types: `.d.ts` / `.d.cts` now carry the JSDoc descriptions, so editors show docs on hover;
+- [x] Removed a dead self-reference (`listOfPromiseObjects.promises`) in list mode;
+- [x] Dev deps update. Rollup - v.4.64.5;
+- [x] Skill: moved from `.agents/skills/` to top-level `skills/ask-for-promise/` so any agent can discover it, and shipped it in the npm package. Rewritten to the Agent Skills spec (agentskills.io): third-person description, `license`/`metadata` fields, self-contained references (`references/api.md`, `references/examples.md`) instead of paths into this repo, and three evaluations in `evals/evals.json`. Fixed wrong guidance (chaining off `onComplete`, list mode for unbounded events) and added the list-mode unbound `done` gotcha;
+
+
+
 ### 3.2.0 ( 2026-07-19)
 - [x] `each` callback now receives the item `index` as a second argument;
 - [x] Removed the `state` field from the `each` callback — it was always `'pending'` and never reflected the real promise state;
