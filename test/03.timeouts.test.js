@@ -163,6 +163,26 @@ describe ( 'askForPromise - "Timeout" function', () => {
         })
     })
 
+    it ( 'Timeout: Single — each-callback timeout arms the task timer', async () => {
+        const task = askForPromise ()
+        let returned
+        task.each ( ({ timeout }) => { returned = timeout ( 5, 'expire' ) } )
+        expect ( returned ).to.be.equal ( task )
+        const r = await task.promise
+        expect ( r ).to.be.equal ( 'expire' )
+    })
+
+    it ( 'Timeout: List — each-callback timeout arms a per-item timer', async () => {
+        const task = askForPromise ([ 'a', 'b' ])
+        task.each ( ({ value, done, timeout }, i ) => {
+                        const item = timeout ( 5, 'expire' )
+                        expect ( item ).to.be.equal ( task.promises[i] )
+                        if ( value === 'a' ) done ( value )
+                })
+        const r = await task.promise
+        expect ( r ).to.be.deep.equal ([ 'a', 'expire' ])
+    })
+
 }) // describe
 
 

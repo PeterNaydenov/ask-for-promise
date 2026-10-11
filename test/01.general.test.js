@@ -210,6 +210,20 @@ it ( 'Array of promises (each)', async () => {
         expect ( res ).to.be.deep.equal ( list )
     }) // it array of promises (each)
 
+
+
+it ( 'Single promise (each) keeps the index slot', async () => {
+        const task = askForPromise ()
+        task.each ( ( {value, done}, index, extra ) => {
+                        expect ( value ).to.be.equal ( null )
+                        expect ( index ).to.be.equal ( undefined )
+                        expect ( extra ).to.be.equal ( 'extra' )
+                        done ( extra )
+                }, 'extra' )
+        const res = await task.promise
+        expect ( res ).to.be.equal ( 'extra' )
+    }) // it single promise (each)
+
 }) // describe general
 
 
