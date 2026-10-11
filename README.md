@@ -114,7 +114,7 @@ askForPromise.all([fetchA, fetchB, fetchC], token).onComplete(([a, b, c]) => {
 | `promises` | `AskObject[]` in list mode, `null` in single mode. Use `task.promises[i].done(value)` to resolve a single item. |
 | `done(value?)` | Resolves the promise(s) with `value`. In list mode, resolves every sub-promise with the same value. |
 | `cancel(reason?)` | Rejects the promise(s) with `reason`. In list mode, rejects every sub-promise with the same reason. |
-| `onComplete(resolveFn, rejectFn?)` | Sugar for `promise.then`. Pass a second function as the reject handler. |
+| `onComplete(resolveFn, rejectFn?)` | Sugar for `promise.then`. Pass a second function as the reject handler. Returns `undefined`, so it ends a chain. |
 | `each(cbFn, ...args)` | Calls `cbFn({ value, done, cancel, timeout }, index, ...args)` per item — `index` is the position in the input list. |
 | `timeout(ttl, fallback)` | Arms a `ttl`-millisecond timer. On expiry, the task settles with `fallback`: `onComplete` is rewired to return the fallback, **and** the underlying `task.promise` is settled with the same value (so `await task.promise` and `task.onComplete(...)` agree). In list mode, each still-pending sub-promise is replaced with `fallback` while sub-promises that already settled keep their real value. Returns the same `AskObject` so you can keep chaining. |
 
@@ -152,7 +152,7 @@ task.onComplete((winner) => {
 
 ### Long chain without nesting
 
-Declare each step as a named variable, then wire them up:
+Declare each step as a named variable, then wire them up with `task.promise.then`:
 
 ```js
 const prepareFolders  = askForPromise()
@@ -161,13 +161,13 @@ const updateInterface = askForPromise()
 
 myFS.makeFolders(folders, () => prepareFolders.done())
 
-prepareFolders
-  .onComplete(() => {
+prepareFolders.promise
+  .then(() => {
     myFS.writeFiles(files, () => writeFiles.done())
     return writeFiles.promise
   })
   .then(() => {
-    updateInterface()          // sync part of the work
+    refreshUI()                // sync part of the work
     updateInterface.done()
     return updateInterface.promise
   })
@@ -175,6 +175,8 @@ prepareFolders
     console.log('DONE')
   })
 ```
+
+`onComplete` returns `undefined`, so it ends a chain — use `task.promise.then` to keep chaining.
 
 ### Promise with timeout
 
@@ -223,9 +225,20 @@ task.onComplete(() => console.log('DONE'))
 Type definitions are bundled — no extra install.
 
 ```ts
-import askForPromise, { AskObject } from 'ask-for-promise'
+import askForPromise, { AskObject, AskListObject } from 'ask-for-promise'
 
 const task: AskObject = askForPromise()
+const list: AskListObject = askForPromise([1, 2, 3]) // `promises` is AskObject[], `each` index is a number
+```
+
+CommonJS consumers get matching types: `import askForPromise = require('ask-for-promise')`.
+
+## AI agent skill
+
+The package ships an [Agent Skill](https://agentskills.io) in [`skills/ask-for-promise`](./skills/ask-for-promise/SKILL.md). It teaches coding agents (Claude Code, Codex, Cursor, and others that support the open format) to pick the right API and avoid common mistakes. Copy the folder into your agent's skills directory, or install it from GitHub:
+
+```bash
+npx skills add PeterNaydenov/ask-for-promise
 ```
 
 ## License
