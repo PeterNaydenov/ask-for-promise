@@ -28,7 +28,7 @@
 | `done(value?)` | Resolves `promise`. Clears an active timeout. |
 | `cancel(reason?)` | Rejects `promise`. Clears an active timeout. |
 | `onComplete(onResolve, onReject?)` | Same as `promise.then(onResolve, onReject)` but returns `undefined`. With one argument, only the resolve branch is attached. |
-| `timeout(ttl, fallback?)` | After `ttl` ms, if still pending, resolves the task with `fallback`. Returns the same task, so `askForPromise().timeout(1000, 'late')` works. |
+| `timeout(ttl, fallback?)` | After `ttl` ms, if still pending, resolves the task with `fallback`. Returns the same task; calling `timeout` again replaces the previous timer. |
 | `each(cb, ...args)` | Calls `cb({ value: null, done, cancel, timeout }, undefined, ...args)` once. |
 
 Single-task `done` and `cancel` work when passed as bare callbacks, for example `fetchA().then(task.done, task.cancel)`.
@@ -42,7 +42,7 @@ Same members, with these differences:
 | `promise` | `Promise.all` over every item. Resolves to the item values in input order; rejects on the first item rejection. |
 | `promises` | Array of per-item single tasks. `task.promises[i].done(v)` settles item `i`. |
 | `done(value?)` / `cancel(reason?)` | Settles **every** pending item with the same value. Must be called as `task.done(...)`; passing `task.done` unbound throws. |
-| `timeout(ttl, fallback?)` | On expiry, every still-pending item resolves with `fallback`; settled items keep their values. |
+| `timeout(ttl, fallback?)` | On expiry, every still-pending item resolves with `fallback`; settled items keep their values. Both `promise` and `onComplete` receive the results array. Calling `timeout` again replaces the previous timer. |
 | `each(cb, ...args)` | Calls `cb({ value, done, cancel, timeout }, index, ...args)` for every item. |
 
 An empty list (`askForPromise([])`) resolves immediately with `[]`.
