@@ -4,229 +4,107 @@ import askForPromise from '../src/askForPromise.js'
 import { expect } from 'chai';
 
 
-
 describe ( 'askForPromise - general', () => {
-    
-    it ( 'done (resolve)', () => {
-              var test, msg ;
 
-              let taskComplete = askForPromise()
-
-              setTimeout ( () => taskComplete.done ( 'success' ),   1 )
-
-              taskComplete.promise
-              .then ( ( r ) => { 
-                                    test = 1
-                                    msg = r
-                         })
-              test = 2
-
-              setTimeout ( () => {
-                                         expect ( test ).to.be.equal ( 1 )
-                                         expect ( msg  ).to.be.equal ( 'success' )
-                         }, 3 )
-       }) // it done
-
-
-
-
-
-    it ( 'cancel (reject)' , () => {
-            var test, msg;
-
-            let taskComplete = askForPromise()
-
-            setTimeout ( () => taskComplete.cancel('bad'),   1)
-
-            taskComplete.promise
-            .then (   (   ) => test = 1
-                    , ( r ) => {
-                                  test = 3
-                                  msg  = r
-                                } 
-                  )
-            test = 2
-
-            setTimeout ( () => { 
-                                  expect ( test ).to.be.equal ( 3 )
-                                  expect ( msg ).to.be.equal ( 'bad' )
-                       }, 3 )
-       }) // it cancel
-
-
-
-
-    
-    it ( 'promise.all' , () => {
-            var
-                  list = [ 2, 5, 1, 4 ]
-                , res  = []
-                ;
-
-            let taskComplete         = list.map ( el => askForPromise() )
-            let taskCompletePromises = taskComplete.map ( o => o.promise )
-
-            list.forEach ( ( el, i ) => {
-                                    setTimeout ( () => {
-                                                          res.push ( el )
-                                                          taskComplete[i].done ( el )
-                                       }, el )
-                 })
-
-            Promise.all ( taskCompletePromises )
-            .then ( ( r ) => {
-                              expect ( res ).to.have.length ( 4 )
-                              expect ( r   ).to.have.length ( 4 )
-                              
-                              expect ( r[0]).to.equal (list[0] )
-                              expect ( res[0]).to.not.equal (list[0] )
-                  })
-       }) // it promise all
-
-
-
-
-
-  it ( 'promise.race', () => {
-          var
-                  list = [ 2, 5, 1, 4 ]
-                , res  = []
-                ;
-
-            let taskComplete         = list.map ( el => askForPromise() )
-            let taskCompletePromises = taskComplete.map ( o => o.promise )
-
-            list.forEach ( ( el, i ) => setTimeout ( () => {
-                                                              res.push(el)
-                                                              taskComplete[i].done ( el )
-                                            } , el )   
-                    )
-
-            Promise.race ( taskCompletePromises )
-            .then ( ( r ) => {
-                              expect ( res ).to.have.length ( 1 )
-                              expect ( r   ).to.be.equal ( res[0] )
-                  })
-    }) // it race
-
-
-
-
-
-  it ( 'Alternative promise race', () => {
-          var
-                  list = [ 2, 5, 1, 4 ]
-                , res  = []
-                ;
-
-            let taskComplete = askForPromise ()
-
-            list.forEach ( ( el, i ) => setTimeout ( () => {
-                                                              res.push(el)
-                                                              taskComplete.done ( el )
-                                            } , el )   
-                    )
-
-            taskComplete.promise
-            .then ( r => {
-                              expect ( res ).to.have.length ( 1 )
-                              expect ( r   ).to.be.equal ( res[0] )                              
-                  })
-    }) // it alt race
-
-   
-
-
-
-  it ( 'Chain of promises' , () => {
-            var result = [];
-
-            let step1 = askForPromise()
-            let step2 = askForPromise()
-            let step3 = askForPromise()
-
-            step1.done()
-            
-            step1.promise
-            .then ( () => {
-                              result.push ( 'step 1' )
-                              setTimeout ( () => step2.done(), 1)
-                              return step2.promise
-                  })
-            .then ( () => {
-                              result.push ( 'step 2' )
-                              setTimeout ( () => step3.done(), 1)
-                              return step3.promise
-                  })
-            .then ( () => {
-                             result.push ( 'step 3' )
-                             expect ( result    ).to.have.length ( 4 )
-                             expect ( result[0] ).to.equal ( 'start' )                            
-                  })
-
-            result.push ( 'start' )
-     }) // it chain
-
-
-
-  it ( 'Array of promises' , () => {
-         let 
-                 list = [ 1 , 2, 3 ]
-               , a = 1
-               ;
-
-         let mission = askForPromise ( list )
-
-         list.forEach ( (el,i) => {
-                                     a = el
-                                     mission.done(i)
-              })
-         
-         Promise
-           .all ( mission.promises )
-           .then ( () => {
-                            expect ( a ).to.be.equal ( 3 )                            
-                      })
-  }) // it array of promises
-
-
-
-it ( 'Array of promises (each)', async () => {
-        const list = [ 1, 2, 3 ]
-        let a = 1
-
-        const mission = askForPromise ( list )
-
-        mission.each ( ({value, done}, index) => {
-                        a = value
-                        expect ( index ).to.be.equal ( list.indexOf ( value ) )
-                        done ( value )
-                })
-
-        const res = await mission.promise
-        expect ( a ).to.be.equal ( 3 )
-        expect ( res ).to.have.length ( 3 )
-        expect ( res[0] ).to.be.equal ( 1 )
-        expect ( res ).to.be.deep.equal ( list )
-    }) // it array of promises (each)
-
-
-
-it ( 'Single promise (each) keeps the index slot', async () => {
+    it ( 'done (resolve)', async () => {
         const task = askForPromise ()
-        task.each ( ( {value, done}, index, extra ) => {
-                        expect ( value ).to.be.equal ( null )
-                        expect ( index ).to.be.equal ( undefined )
-                        expect ( extra ).to.be.equal ( 'extra' )
-                        done ( extra )
-                }, 'extra' )
-        const res = await task.promise
-        expect ( res ).to.be.equal ( 'extra' )
-    }) // it single promise (each)
+        let completed = false
+        const observed = task.promise.then ( result => {
+            completed = true
+            return result
+        })
+        task.done ( 'success' )
+        expect ( completed ).to.equal ( false )
+        expect ( await observed ).to.equal ( 'success' )
+        expect ( completed ).to.equal ( true )
+    })
 
-}) // describe general
+    it ( 'cancel (reject)', async () => {
+        const task = askForPromise ()
+        const observed = task.promise.then (
+            () => { throw new Error ( 'should have rejected' ) },
+            reason => reason
+        )
+        task.cancel ( 'bad' )
+        expect ( await observed ).to.equal ( 'bad' )
+    })
 
+    it ( 'promise.all', async () => {
+        const tasks = [ 2, 5, 1, 4 ].map ( () => askForPromise () )
+        const result = Promise.all ( tasks.map ( task => task.promise ) )
+        // Complete out of order; results still follow declaration order.
+        tasks[2].done ( 1 )
+        tasks[0].done ( 2 )
+        tasks[3].done ( 4 )
+        tasks[1].done ( 5 )
+        expect ( await result ).to.deep.equal ([ 2, 5, 1, 4 ])
+    })
 
+    it ( 'promise.race', async () => {
+        const tasks = [ 2, 5, 1, 4 ].map ( () => askForPromise () )
+        const result = Promise.race ( tasks.map ( task => task.promise ) )
+        tasks[2].done ( 1 )
+        tasks[0].done ( 2 )
+        tasks[3].done ( 4 )
+        tasks[1].done ( 5 )
+        expect ( await result ).to.equal ( 1 )
+    })
+
+    it ( 'Alternative promise race', async () => {
+        const task = askForPromise ()
+        task.done ( 'first' )
+        task.done ( 'second' )
+        expect ( await task.promise ).to.equal ( 'first' )
+    })
+
+    it ( 'Chain of promises', async () => {
+        const result = []
+        const step1 = askForPromise ()
+        const step2 = askForPromise ()
+        const step3 = askForPromise ()
+        step1.done ()
+        const chain = step1.promise.then ( () => {
+            result.push ( 'step 1' )
+            step2.done ()
+            return step2.promise
+        }).then ( () => {
+            result.push ( 'step 2' )
+            step3.done ()
+            return step3.promise
+        }).then ( () => result.push ( 'step 3' ) )
+        result.push ( 'start' )
+        await chain
+        expect ( result ).to.deep.equal ([ 'start', 'step 1', 'step 2', 'step 3' ])
+    })
+
+    it ( 'Array of promises', async () => {
+        const task = askForPromise ([ 1, 2, 3 ])
+        task.done ( 'shared' )
+        expect ( await task.promise ).to.deep.equal ([ 'shared', 'shared', 'shared' ])
+        expect ( await Promise.all ( task.promises.map ( item => item.promise ) ) ).to.deep.equal ([ 'shared', 'shared', 'shared' ])
+    })
+
+    it ( 'Array of promises (each)', async () => {
+        const list = [ 1, 2, 3 ]
+        const task = askForPromise ( list )
+        task.each ( ({ value, done }, index) => {
+            expect ( index ).to.equal ( list.indexOf ( value ) )
+            done ( value )
+        })
+        expect ( await task.promise ).to.deep.equal ( list )
+    })
+
+    it ( 'Single promise (each) keeps the index slot', async () => {
+        const task = askForPromise ()
+        task.each ( ({ value, done }, index, extra) => {
+            expect ( value ).to.equal ( null )
+            expect ( index ).to.equal ( undefined )
+            expect ( extra ).to.equal ( 'extra' )
+            done ( extra )
+        }, 'extra' )
+        expect ( await task.promise ).to.equal ( 'extra' )
+    })
+})
 
 
 // ============================================================================
