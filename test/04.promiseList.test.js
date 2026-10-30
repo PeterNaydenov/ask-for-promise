@@ -21,7 +21,7 @@ describe ( 'Promise list', () => {
 
 
 
-    it ( 'Sequence of async functions', done => {
+    it ( 'Sequence of async functions', async () => {
                 const
                       turn = []
                     , t1 = function () {
@@ -62,16 +62,14 @@ describe ( 'Promise list', () => {
                 // sequence of async functions: 
                 // Next function will start when previous function is done.
                 const task = askForPromise.sequence ( list, 'h1' )
-                task.onComplete ( r => {
-                            expect ( turn ).to.be.deep.equal ( [1,2,3] )            // in order of completion
-                            expect ( r ).to.be.deep.equal ( ['tt1', 'tt2', 'tt3'] ) // in order of declaration
-                            done ()
-                    })
+                const r = await task.promise
+                expect ( turn ).to.be.deep.equal ( [1,2,3] )            // in order of completion
+                expect ( r ).to.be.deep.equal ( ['tt1', 'tt2', 'tt3'] ) // in order of declaration
         }) // it sequence sample
 
 
 
-    it ( 'All promises in parallel', done => {
+    it ( 'All promises in parallel', async () => {
                 const
                       turn = []
                     , t1 = function () {
@@ -110,11 +108,9 @@ describe ( 'Promise list', () => {
                     , list = [ t1, t2, t3 ]
                     ;
                 const task = askForPromise.all ( list, 'h1' )
-                task.onComplete ( r => {
-                                expect ( r ).to.be.deep.equal ( ['tt1', 'tt2', 'tt3'] ) // in order of declaration
-                                expect ( turn ).to.be.deep.equal ( [3,2,1] )            // in order of completion 
-                                done ()
-                        })
+                const r = await task.promise
+                expect ( r ).to.be.deep.equal ( ['tt1', 'tt2', 'tt3'] ) // in order of declaration
+                expect ( turn ).to.be.deep.equal ( [3,2,1] )            // in order of completion
         }) // it all promises in parallel
 
 
