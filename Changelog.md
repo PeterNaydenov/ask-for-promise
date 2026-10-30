@@ -2,6 +2,20 @@
 
 
 
+### 3.2.2 ( 2026-10-31)
+- [x] Fix: Timed tasks remain alive until their promise settles, and list timeouts now deliver the same results array through `promise` and `onComplete`. Re-arming a timeout replaces the previous timer;
+- [x] Compatibility: Removed the runtime dependency on `WeakRef`; document the required runtime APIs;
+- [x] Docs: Correct error-first callback guidance and TypeScript type-only imports; include the README image and changelog in the package;
+- [x] Build: Build before testing at publish time, and verify the packed package from external TypeScript consumers;
+- [x] Test: Await asynchronous assertions in the original tests and fail on unhandled rejections. Verify both runtime entry points after installing the packed package, and run npm's JavaScript entry point for Windows compatibility;
+- [x] Build: The build moved from Rollup to Vite. Vite builds with Rolldown and resolves the modules on its own. The 'rollup' and the three '@rollup/plugin-*' dev dependencies are gone;
+- [x] Fix: '@rollup/plugin-node-resolve' was removed from the build. It was not needed, and its 'deepmerge' dependency had a prototype poisoning advisory with no fixed version;
+- [x] The UMD bundle calls the AMD loader with the standard 'define ( dependencies, factory )' signature;
+- [x] Test: The generated distributions are checked. The UMD bundle, the CommonJS bundle and the package entry points behave the same;
+- [x] Test: The examples of the skill are run against the source and the shipped bundle. A change in the bundle that breaks a documented example fails the suite now;
+
+
+
 ### 3.2.1 ( 2026-10-11)
 - [x] Fix: `require('ask-for-promise')` was typed with the ESM declarations (TypeScript reported the default export as not callable). Added `types/index.d.cts` and per-condition `types` in `exports`;
 - [x] Fix: `askForPromise.sequence` / `askForPromise.all` types rejected valid steps (functions with parameters, plain return values, promises in `all`);
