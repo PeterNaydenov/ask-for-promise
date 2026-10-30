@@ -21,7 +21,7 @@ The moment an async task finishes is rarely the same place where the task was st
 - **Race conditions** — share one `done` between N parallel callbacks to emulate `Promise.race`.
 - **Long chains** — declare each step as a named `askForPromise()` and wire them up without nesting `.then`.
 - **Mixed sync / async** — a function that's sometimes sync can still call `task.done()`.
-- **Legacy callback APIs** — pass `task.done` straight to a Node-style callback.
+- **Legacy callback APIs** — adapt an error-first callback with `task.cancel(err)` or `task.done(value)`.
 - **Timeouts** — race any promise against a TTL with `.timeout(ttl, fallback)`.
 
 ## Features
@@ -48,6 +48,9 @@ import askForPromise from 'ask-for-promise'
 // CommonJS
 const askForPromise = require('ask-for-promise')
 ```
+
+The runtime needs `Promise`, `setTimeout`, and `clearTimeout`. The browser
+bundle targets ES2015 syntax; ESM consumers also need ES module support.
 
 ## Quick start
 
@@ -116,7 +119,7 @@ askForPromise.all([fetchA, fetchB, fetchC], token).onComplete(([a, b, c]) => {
 | `cancel(reason?)` | Rejects the promise(s) with `reason`. In list mode, rejects every sub-promise with the same reason. |
 | `onComplete(resolveFn, rejectFn?)` | Sugar for `promise.then`. Pass a second function as the reject handler. Returns `undefined`, so it ends a chain. |
 | `each(cbFn, ...args)` | Calls `cbFn({ value, done, cancel, timeout }, index, ...args)` per item — `index` is the position in the input list. |
-| `timeout(ttl, fallback)` | Arms a `ttl`-millisecond timer. On expiry, the task settles with `fallback`: `onComplete` is rewired to return the fallback, **and** the underlying `task.promise` is settled with the same value (so `await task.promise` and `task.onComplete(...)` agree). In list mode, each still-pending sub-promise is replaced with `fallback` while sub-promises that already settled keep their real value. Returns the same `AskObject` so you can keep chaining. |
+| `timeout(ttl, fallback?)` | Arms a `ttl`-millisecond timer. On expiry, the task settles with `fallback`. In list mode, each still-pending sub-promise is resolved with `fallback` while settled items keep their values. `promise` and `onComplete` receive the same result. Returns the same task; calling `timeout` again replaces the previous timer. |
 
 ## Examples
 
@@ -225,13 +228,14 @@ task.onComplete(() => console.log('DONE'))
 Type definitions are bundled — no extra install.
 
 ```ts
-import askForPromise, { AskObject, AskListObject } from 'ask-for-promise'
+import askForPromise, { type AskObject, type AskListObject } from 'ask-for-promise'
 
 const task: AskObject = askForPromise()
 const list: AskListObject = askForPromise([1, 2, 3]) // `promises` is AskObject[], `each` index is a number
 ```
 
 CommonJS consumers get matching types: `import askForPromise = require('ask-for-promise')`.
+The declarations describe the API shape, but values and results are typed as `any`.
 
 ## AI agent skill
 
