@@ -2,53 +2,58 @@
 
 import askForPromise from '../src/askForPromise.js'
 import { expect } from 'chai';
+import { execFileSync } from 'node:child_process'
 
 
 
 describe ( 'askForPromise - "Timeout" function', () => {
     
-    it ( 'Timeout: Single Promise with completion', () => {
-            const task = askForPromise ().timeout ( 100, "timeout" )
-            task.done ( 'standard' )
-            task.onComplete ( ( r ) => { 
-                        expect ( r ).to.be.equal ( 'standard', 'Function should close the promise.' )
-                   })
-       }) // it single with completion
+    it ( 'Timeout: Single Promise with completion', async () => {
+        const task = askForPromise ().timeout ( 100, 'timeout' )
+        const completed = new Promise ( (resolve, reject) => task.onComplete ( resolve, reject ) )
+        task.done ( 'standard' )
+        expect ( await completed ).to.equal ( 'standard' )
+    })
 
+    it ( 'Timeout: Single Promise with timeout', async () => {
+        const task = askForPromise ().timeout ( 20, 'expire' )
+        const completed = new Promise ( (resolve, reject) => task.onComplete ( resolve, reject ) )
+        expect ( await completed ).to.equal ( 'expire' )
+        task.done ( 'late result' )
+        expect ( await task.promise ).to.equal ( 'expire' )
+    })
 
+    it ( 'Timeout: Multiple promises with completion', async () => {
+        const list = [ 2, 50, 10, 40 ]
+        const task = askForPromise ( list ).timeout ( 100, 'finish' )
+        const completed = new Promise ( (resolve, reject) => task.onComplete ( resolve, reject ) )
+        task.each ( ({ value, done }) => done ( value ) )
+        expect ( await completed ).to.deep.equal ( list )
+    })
 
-    it ( 'Timeout: Single Promise with timeout', () => {
-            const task = askForPromise (). timeout ( 20, 'expire' )
-            setTimeout ( () => task.done('task'), 40 )
-            task.onComplete ( r => {
-                  expect ( r ).to.be.equal ( 'expire', 'Timeout should close the promise' )
-              })
-       }) // it single with timeout
+    it ( 'Timeout: list promise and onComplete receive the same results', async () => {
+        const task = askForPromise ([ 1, 2 ]).timeout ( 20, 'finish' )
+        task.promises[0].done ( 'ready' )
+        const completed = new Promise ( resolve => task.onComplete ( resolve ) )
+        expect ( await task.promise ).to.deep.equal ([ 'ready', 'finish' ])
+        expect ( await completed ).to.deep.equal ([ 'ready', 'finish' ])
+    })
 
+    it ( 'Timeout: retaining only the promise survives garbage collection', () => {
+        const source = new URL ( '../src/askForPromise.js', import.meta.url ).href
+        const code = `import ask from ${JSON.stringify(source)};
+            const promise = ask().timeout(100, 'fallback').promise;
+            const gc = setInterval(() => global.gc(), 5);
+            const result = await Promise.race([promise, new Promise(r => setTimeout(() => r('pending'), 300))]);
+            clearInterval(gc);
+            if (result !== 'fallback') throw new Error('Timed promise did not settle');`
+        execFileSync ( process.execPath, [ '--expose-gc', '--input-type=module', '-e', code ], { timeout: 5000 } )
+    })
 
-
-    it ( 'Timeout: Multiple promises with completion', () => {
-            const list = [ 2, 50, 10, 40 ];
-            const task = askForPromise ( list ).timeout ( 100, "finish" )
-            list.forEach ( ( el, i ) => { setTimeout ( () => task.promises[i].done ( el ), el )   })
-            task
-             .onComplete (  r  => {
-                                        expect ( r ).to.be.an ( 'array' )
-                                        expect ( r ).to.have.length ( 4 )
-                 })
-        }) // it multiple with completion
-
-
-
-    it ( 'Timeout: Multipe promises with timeout', () => {
-      const list = [ 2, 60, 10, 40 ];
-      const task = askForPromise ( list ).timeout ( 40, "finish" )
-            list.forEach ( (el,i) => setTimeout ( () => task.promises[i].done(el), el )   )
-            task
-             .onComplete ( r  => {
-                                    expect ( r ).to.be.equal ('finish', 'Timeout should be applied' )
-                 })
-       }) // it multipe with timeout
+    it ( 'Timeout: rearming replaces the previous timer', async () => {
+        const task = askForPromise ().timeout ( 10, 'old' ).timeout ( 30, 'new' )
+        expect ( await task.promise ).to.equal ( 'new' )
+    })
 
 
 
