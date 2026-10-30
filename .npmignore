@@ -4,3 +4,4 @@ coverage
 test
 example.js
 package-lock.json
+vite.config.js
