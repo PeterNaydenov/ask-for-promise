@@ -59,8 +59,8 @@
 
 /**
  * A step for `askForPromise.sequence` / `askForPromise.all`.
- * Receives the extra arguments (and, in `sequence`, the previous step's
- * result as the last argument). May return a promise or a plain value.
+ * Receives the extra arguments (and, in `sequence`, all previous results
+ * appended in order). May return a promise or a plain value.
  * @callback StepFunction
  * @param {...any} args
  * @returns {any}
@@ -93,13 +93,10 @@
  * @property {(fx: (result: any) => void, rejectFx?: ((error: any) => void) | null) => void} onComplete
  *   Sugar for `promise.then`. Pass a second function as the reject handler.
  * @property {(ttl: number, expMsg?: any) => AskObject} timeout - Arms a
- *   `ttl`-millisecond timer. On expiry, the task settles with `expMsg`:
- *   `onComplete` is rewired to return the fallback, AND the underlying
- *   `task.promise` is also settled with `expMsg` (so `await task.promise`
- *   and `task.onComplete(...)` agree). In list mode each still-pending
- *   sub-promise is replaced with `expMsg`, while sub-promises that already
- *   settled keep their real value. Returns the same `AskObject` so the
- *   call can be chained.
+ *   `ttl`-millisecond timer, replacing any previous timer. On expiry, a
+ *   single promise resolves with `expMsg`; in list mode each still-pending
+ *   item resolves with `expMsg`, while settled items keep their values.
+ *   `promise` and `onComplete` receive the same result. Returns the same task.
  */
 
 
@@ -170,9 +167,8 @@ function askForPromise ( list ) {
 
 /**
  * Executes a list of step functions one after the other. Each step is
- * called with the original `...args` plus the result of the previous step
- * appended at the end, so a step's resolved value threads through to the
- * next. The returned `task.promise` resolves to an array of every step's
+ * called with the original `...args` plus all previous results appended in
+ * order. The returned `task.promise` resolves to an array of every step's
  * resolved value once the chain completes; if any step rejects (or throws
  * synchronously) the task rejects with that error and the chain stops.
  * @function sequence
@@ -181,8 +177,7 @@ function askForPromise ( list ) {
  *   return a promise (a non-thenable return is accepted via `Promise.resolve`
  *   and treated as a resolved value).
  * @param {...any} args - Arguments passed to the first step. Each step
- *   additionally receives the previous step's resolved value as its last
- *   argument.
+ *   additionally receives all previous results as arguments.
  * @returns {AskObject} `AskObject` whose `promise` resolves to the array of
  *   step results (in order), or rejects on the first step failure.
  */
@@ -293,11 +288,7 @@ function _singlePromise () {
                                                   done   = resolve
                                                   cancel = reject
                                  })
-    // Internal slot for the active timer (if any). Stored on the askObject
-    // (not in a closure variable) so that the timer-clearing wrappers in
-    // done/cancel, the timer-setting setter in _timeout, and the
-    // askObject's own self-references all live on the same object — which
-    // means dropping the askObject reference releases the whole cycle.
+    // Internal slot for the active timer (if any).
     /** @type {AskObject & TimerSlot} */
     const askObject = {
                promise       : x
@@ -307,27 +298,13 @@ function _singlePromise () {
              , cancel        : () => {}
              , each          : () => {}
              , onComplete    : _after(x)
-             , timeout       : _timeout ( false )
+             , timeout       : _timeout ()
            }
 
-    // Use a WeakRef so the wrapped done/cancel (and the setTimeout callback
-    // in _timeout) can settle the task and access _activeTimer without
-    // strongly capturing the askObject. Strong capture (e.g. via `const
-    // self = this` in a regular function, or via an arrow function) would
-    // create a cycle `askObject → askObject.done → askObject` that V8's
-    // tracing collector does NOT reclaim, leaving the askObject live until
-    // its timer fires. The WeakRef keeps the cycle breakable.
-    const askObjectRef = new WeakRef(askObject)
-
-    // Wrap done/cancel so they clear the active timer (if any) before
-    // settling the promise. Settling the promise is a no-op if it's already
-    // settled, so the wrapped functions are safe to call from any path
-    // (askObject.done/cancel, the each callback, or the timer's own callback).
-    // These are regular functions — they use the WeakRef to reach the
-    // askObject instead of capturing it via closure — so the askObject can
-    // be garbage-collected even if these methods are still referenced.
-    askObject.done   = function ( value )  { const o = askObjectRef.deref(); if (o !== undefined && o._activeTimer !== null) { clearTimeout(o._activeTimer); o._activeTimer = null } done(value)   }
-    askObject.cancel = function ( reason ) { const o = askObjectRef.deref(); if (o !== undefined && o._activeTimer !== null) { clearTimeout(o._activeTimer); o._activeTimer = null } cancel(reason) }
+    // Bare callbacks must also clear the timer, so retain the task in these
+    // wrappers. JavaScript garbage collectors can reclaim unreachable cycles.
+    askObject.done   = function ( value )  { if (askObject._activeTimer !== null) { clearTimeout(askObject._activeTimer); askObject._activeTimer = null } done(value) }
+    askObject.cancel = function ( reason ) { if (askObject._activeTimer !== null) { clearTimeout(askObject._activeTimer); askObject._activeTimer = null } cancel(reason) }
 
     // `timeout` is wrapped so it runs with the askObject as `this` (it is
     // called as `ctx.timeout(...)`). `undefined` fills the `index` slot so
@@ -359,12 +336,7 @@ function _singlePromise () {
                                     // whenever an item is cancelled.
                                     const all = Promise.all ( listOfPromises )
 
-                                    // The original input list is kept on the askObject so that
-                                    // `each` can read the per-item value via `this._list[i]`
-                                    // instead of capturing the list via closure. (Capturing
-                                    // the list in a closure that's stored on the askObject
-                                    // would create an unreachable cycle that V8 doesn't
-                                    // collect.)
+                                    // Keep the original values for the each callback.
                                     /** @type {AskListObject & TimerSlot & { _list: any[] }} */
                                     const askObject = {
                                                   promise       : all
@@ -375,7 +347,7 @@ function _singlePromise () {
                                                 , cancel        : () => {}
                                                 , each          : () => {}
                                                 , onComplete    : _after ( all )
-                                                , timeout       : _timeout ( true )
+                                                , timeout       : _timeout ()
                                             }
                                     // Wrap list-level done/cancel so they clear the list-level
                                     // timer (if any) before settling every sub-promise. Per-item
@@ -428,81 +400,28 @@ return function onComplete ( fx, rejectFx=null ) {
 
 
 /**
- * Builds a `timeout(ttl, expMsg)` factory for an `AskObject`. The returned
- * function must be called as a method on the `AskObject`
- * (`askObject.timeout(ttl, expMsg)`); it uses `this` to wire the timer
- * into the receiving askObject. On expiry, the task settles with `expMsg`:
- * `onComplete` is rewired to return the fallback, and the underlying
- * `askObject.promise` is also settled with `expMsg` (so `await promise`
- * and `onComplete(...)` agree).
+ * Builds the timeout method shared by single and list tasks. A timer keeps
+ * the task alive until it settles or expires, even if only its promise is
+ * retained. Re-arming a timeout replaces the previous timer.
  * @private
- * @param {boolean} isList - `true` to race the `Promise.all` of every
- *   sub-promise, `false` to race the single promise.
  * @returns {<T extends AskObject>(this: T & TimerSlot, ttl: number, expMsg?: any) => T}
- *   A function to be invoked as a method on the `AskObject`; returns the
- *   same `AskObject` so calls can be chained.
  */
-function _timeout ( isList ) {
-  /**
-   * Arms a TTL timer on the underlying promise(s) and rewires the
-   * `AskObject`'s `onComplete` to the race result.
-   *
-   * Note: this function uses `this` (set by the caller to the askObject)
-   * and never captures it in a closure. The setTimeout callback reaches
-   * the askObject only via a WeakRef, so dropping the askObject reference
-   * allows V8 to collect it even if the timer hasn't fired yet. (V8's
-   * tracing GC does NOT reclaim cycles where a closure on the object
-   * captures the object — that's why every method on the askObject uses
-   * `this` or a WeakRef, never a direct closure capture.)
-   *
-   * @template {AskObject} T
-   * @this {T & TimerSlot}
-   * @param {number} ttl - Timeout duration in milliseconds.
-   * @param {any} [expMsg] - Value that resolves the race when the timer
-   *   fires before the underlying promise(s).
-   * @returns {T} The same `AskObject` (for chaining).
-   */
-  return function timeout( ttl, expMsg ) {
-            const askObjectRef = new WeakRef(this)
-
-            // `main` is the underlying promise(s) the timer races against.
-            // In single mode it's the same promise as `this.promise`;
-            // in list mode it's a fresh `Promise.all` over every sub-promise.
-            /** @type {Promise<any>} */
-            let main
-            if ( isList ) main = Promise.all( /** @type {AskObject[]} */ ( this.promises ).map ( o => o.promise ) )
-            else          main = this.promise
-
-            /** @type {ReturnType<typeof setTimeout> | undefined} */
-            let timer
-            const timeout = new Promise ( (resolve, reject) => {
-                                    timer = setTimeout ( () => {
-                                                    // Settle the underlying task with the fallback so
-                                                    // `task.promise` returns a regular result and any
-                                                    // in-flight resources (hung fetches, pending timers)
-                                                    // are released instead of leaking. No-op if the
-                                                    // askObject has already been garbage-collected.
-                                                    const obj = askObjectRef.deref()
-                                                    if (obj !== undefined) obj.done(expMsg)
-                                                    resolve(expMsg)
-                                                }, ttl)
-                                }) // timeout
-            // Hand the timer handle to the askObject so the wrapped
-            // done/cancel can release the askObject immediately on
-            // settlement, instead of waiting for the timer to fire.
-            this._activeTimer = /** @type {ReturnType<typeof setTimeout>} */ ( timer )
-            // Clear the timer on rejection too. Both branches are needed:
-            // a `.then` without a reject handler would itself reject unhandled.
-            main.then ( () => clearTimeout(timer), () => clearTimeout(timer) )
-            const race = Promise.race ([main, timeout])
-            // The race is internal: its rejection reaches the caller through
-            // `promise` and `onComplete(fx, rejectFx)`, so mark it handled here.
-            race.catch ( () => {} )
-            this [ 'onComplete'] = _after ( race )
-            return this
+function _timeout () {
+  return function timeout ( ttl, expMsg ) {
+            const task = this
+            if ( task._activeTimer !== null ) clearTimeout ( task._activeTimer )
+            const timer = setTimeout ( () => task.done ( expMsg ), ttl )
+            task._activeTimer = timer
+            // Observe both outcomes to avoid an unhandled cleanup rejection.
+            // Check the handle so an older timeout cannot clear a newer one.
+            const clear = () => {
+                clearTimeout ( timer )
+                if ( task._activeTimer === timer ) task._activeTimer = null
+            }
+            task.promise.then ( clear, clear )
+            return task
         }
 } // _timeout func.
-
 
 
 export default askForPromise
