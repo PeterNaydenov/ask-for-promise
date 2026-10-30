@@ -38,8 +38,8 @@ export type EachListCallback = (ctx: EachContext, index: number, ...args: any[])
 
 /**
  * A step for `askForPromise.sequence` / `askForPromise.all`. Receives the
- * extra arguments (and, in `sequence`, the previous step's result as the
- * last argument). May return a promise or a plain value.
+ * extra arguments (and, in `sequence`, all previous results appended in
+ * order). May return a promise or a plain value.
  */
 export type StepFunction = (...args: any[]) => any;
 
@@ -71,10 +71,10 @@ export interface AskObject {
     /** Sugar for `promise.then`. Pass a second function as the reject handler. */
     onComplete: (fx: (result: any) => void, rejectFx?: ((error: any) => void) | null) => void;
     /**
-     * Arms a `ttl`-millisecond timer. On expiry, both `onComplete` and
-     * `promise` settle with `expMsg`. In list mode each still-pending
-     * sub-promise is replaced with `expMsg`; already settled ones keep their
-     * value. Returns the same object so the call can be chained.
+     * Arms a `ttl`-millisecond timer, replacing any previous timer. On expiry,
+     * a single promise resolves with `expMsg`. In list mode each still-pending
+     * item resolves with `expMsg`; already settled items keep their
+     * value. Both completion methods receive the same result. Returns the same object.
      */
     timeout: (ttl: number, expMsg?: any) => this;
 }
@@ -111,8 +111,8 @@ declare function askForPromise(list?: any[] | null): AskObject;
 declare namespace askForPromise {
     /**
      * Executes a list of step functions one after the other. Each step is
-     * called with the original `...args` plus the previous step's result
-     * appended at the end. `task.promise` resolves to an array of every
+     * called with the original `...args` plus all previous step results
+     * appended in order. `task.promise` resolves to an array of every
      * step's result; if any step rejects (or throws) the task rejects with
      * that error and the chain stops.
      * @param list - Steps; each may return a promise or a plain value.
